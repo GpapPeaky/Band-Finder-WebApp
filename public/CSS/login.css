@@ -1,0 +1,104 @@
+/* Basic reset */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Main page styling */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #adf8db;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  transition: background-color 0.9s ease;
+}
+
+/* Main container */
+.container {
+  width: 100%;
+  max-width: 450px;
+  background: white;
+  padding: 30px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Title */
+h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 25px;
+}
+
+/* Input fields and dropdown */
+input,
+select {
+  width: 100%;
+  padding: 0.7rem;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+/* Hover effect */
+input:hover,
+select:hover {
+  border-color: #aaa;
+  background-color: #f9f9f9;
+}
+
+/* Focus effect */
+input:focus,
+select:focus {
+  outline: 2px solid #5a67d8;
+  outline-offset: 1px;
+  border-color: #5a67d8;
+  background-color: #fff;
+}
+
+/* Login button */
+button,
+input[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  margin-top: 5px;
+  background-color: #5a67d8;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.25s ease, transform 0.2s ease;
+}
+
+button:hover,
+input[type="submit"]:hover {
+  background-color: #4c51bf;
+  transform: translateY(-2px);
+}
+
+p {
+  margin-top: 15px;
+  text-align: center;
+  color: #444;
+}
+
+p a {
+  color: #5a67d8;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+p a:hover {
+  text-decoration: underline;
+}
+
+#BandUserForm{
+    display: none;
+}

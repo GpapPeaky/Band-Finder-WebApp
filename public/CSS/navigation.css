@@ -1,0 +1,24 @@
+.modeselector ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  width: 100%;
+}
+
+.modeselector ul li {
+  flex: 1;
+}
+
+.modeselector ul li a {
+  display: block;
+  text-decoration: none;
+  text-align: center;
+  height: 44px;
+  line-height: 44px;
+  background: #eee;
+}
+
+.modeselector ul li a:hover {
+  background: #ddd;
+}

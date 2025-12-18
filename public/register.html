@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Exercise 3 | Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="This is a website about the third assignment of hy 359..."
+    />
+    <meta name="keywords" content="csd, personal, website, hy359" />
+    <meta name="author" content="Apostolakis Giorgos" />
+    <!-- External stylesheet for styling -->
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+  </head>
+  <body>
+    <!-- ==================== SIMPLE USER REGISTRATION FORM ==================== -->
+    <!-- Main container for simple user form -->
+    <div class="container">
+      <h1>Register User Form</h1>
+
+      <!-- Toggle buttons to switch between user types -->
+      <div class="type-selector">
+        <button id="simpleBtn" class="selected">Simple User</button>
+        <button id="bandBtn">Band User</button>
+      </div>
+
+      <!-- Simple User Registration Form -->
+      <form id="simpleUserForm" action="#" method="post">
+        <!-- Username field: must start with letter, min 6 chars -->
+        <label class="required" for="username">*Username:</label>
+        <input
+          type="text"
+          name="username"
+          id="username"
+          minlength="6"
+          pattern="[A-Za-z][A-Za-z0-9]{5,}"
+          placeholder="Enter your username"
+          required
+        />
+
+        <!-- Email field: uses HTML5 email validation -->
+        <label class="required" for="email">*Email:</label>
+        <input
+          type="email"
+          name="email"
+          id="email"
+          placeholder="Enter your email"
+          required
+        />
+
+        <!-- Password field: 8-14 characters -->
+        <label class="required" for="password">*Password:</label>
+        <input
+          type="password"
+          name="password"
+          id="password"
+          minlength="8"
+          maxlength="14"
+          placeholder="Enter your password"
+          required
+        />
+
+        <!-- Password confirmation field -->
+        <label class="required" for="confirm_password">*Verify Password:</label>
+        <input
+          type="password"
+          name="confirm_password"
+          id="confirm_password"
+          minlength="8"
+          maxlength="14"
+          placeholder="Confirm your password"
+          required
+        />
+
+        <!-- Message container for password validation feedback -->
+        <div id="message"></div>
+
+        <!-- First name: 3-30 chars, letters and spaces only -->
+        <label class="required" for="firstname">*First Name:</label>
+        <input
+          type="text"
+          name="firstname"
+          id="firstname"
+          minlength="3"
+          maxlength="30"
+          pattern="[A-Za-zΑ-Ωα-ω\s]+"
+          placeholder="Enter your first name"
+          required
+        />
+
+        <!-- Last name: 3-30 chars, letters and spaces only -->
+        <label class="required" for="lastname">*Last Name:</label>
+        <input
+          type="text"
+          name="lastname"
+          id="lastname"
+          minlength="3"
+          maxlength="30"
+          pattern="[A-Za-zΑ-Ωα-ω\s]+"
+          placeholder="Enter your last name"
+          required
+        />
+
+        <!-- Birthdate: restricted to 1920-2011 -->
+        <label class="required" for="birthdate">*Birthdate:</label>
+        <input
+          type="date"
+          name="birthdate"
+          id="birthdate"
+          min="1920-01-01"
+          max="2011-12-31"
+          value="1980-01-01"
+          required
+        />
+
+        <!-- Gender selection: radio buttons for male/female -->
+        <label class="required">*Gender:</label>
+        <div class="gender-select">
+          <div class="gender">
+            <input
+              type="radio"
+              name="gender"
+              value="male"
+              id="male"
+              required
+            />
+            <label for="male">Male</label>
+          </div>
+          <div class="gender">
+            <input
+              type="radio"
+              name="gender"
+              value="female"
+              id="female"
+              required
+            />
+            <label for="female">Female</label>
+          </div>
+        </div>
+
+        <!-- Country selection: dropdown with European countries -->
+        <label class="required" for="country">*County:</label>
+        <select name="country" id="country" required>
+          <option value="Greece" selected>Greece</option>
+          <option value="Germany">Germany</option>
+          <option value="France">France</option>
+          <option value="Italy">Italy</option>
+          <option value="Spain">Spain</option>
+          <option value="Poland">Poland</option>
+          <option value="Romania">Romania</option>
+          <option value="Netherlands">Netherlands</option>
+          <option value="Belgium">Belgium</option>
+          <option value="Austria">Austria</option>
+          <option value="Hungary">Hungary</option>
+          <option value="Portugal">Portugal</option>
+          <option value="Sweden">Sweden</option>
+          <option value="Czechia">Czechia</option>
+          <option value="Finland">Finland</option>
+          <option value="Denmark">Denmark</option>
+          <option value="Bulgaria">Bulgaria</option>
+          <option value="Slovakia">Slovakia</option>
+          <option value="Ireland">Ireland</option>
+          <option value="Croatia">Croatia</option>
+          <option value="Cyprus">Cyprus</option>
+        </select>
+
+        <!-- City field: 3-30 characters -->
+        <label class="required" for="city">*City:</label>
+        <input
+          type="text"
+          name="city"
+          id="city"
+          minlength="3"
+          maxlength="30"
+          placeholder="Enter your city"
+          required
+        />
+
+        <!-- Address field: 10-150 characters -->
+        <label class="required" for="address">*Address:</label>
+        <input
+          type="text"
+          name="address"
+          id="address"
+          minlength="5"
+          maxlength="150"
+          placeholder="Enter your address"
+          required
+        />
+        <!-- --- OSM VALIDATION + MAP --- -->
+        <div id="osmMessage" style="color: red; margin: 10px 0"></div>
+
+        <button id="checkAddressBtn" type="button">Check Address</button>
+
+        <button
+          id="showMapBtn"
+          type="button"
+          style="display: none; margin-top: 8px"
+        >
+          Show Map
+        </button>
+
+        <div
+          id="mapContainer"
+          style="width: 100%; height: 400px; margin-top: 15px; display: none"
+        ></div>
+
+        <!-- Phone field: 10-14 digits only -->
+        <label class="required" for="phone">*Phone Number:</label>
+        <input
+          type="tel"
+          name="telephone"
+          id="phone"
+          pattern="[0-9]{10,14}"
+          placeholder="Enter your phone number"
+          required
+        />
+
+        <!-- Action buttons: show password and check password strength -->
+        <div class="bottom">
+          <div class="show-password">Show Password</div>
+          <div class="check-streangth">Check Password</div>
+        </div>
+
+        <p class="paragraphLogin">
+          Already have an account?
+          <a class="linkLogin" href="./index.html">Login</a>
+        </p>
+
+        <!-- Submit button -->
+        <button class="submitbtton" type="submit">Register</button>
+      </form>
+    </div>
+
+    <!-- ==================== BAND USER REGISTRATION FORM ==================== -->
+    <!-- Main container for band user form (initially hidden) -->
+    <div class="container" id="bandUserFormContainer">
+      <h1>Register User Form</h1>
+
+      <!-- Toggle buttons to switch between user types -->
+      <div class="type-selector">
+        <button id="simpleBtn2">Simple User</button>
+        <button id="bandBtn2" class="selected">Band User</button>
+      </div>
+
+      <!-- Band User Registration Form -->
+      <form id="bandUserForm" action="#" method="post">
+        <!-- Band username: must start with letter, min 6 chars -->
+        <label class="required" for="username_band">*Username:</label>
+        <input
+          type="text"
+          name="username_band"
+          id="username_band"
+          minlength="6"
+          pattern="[A-Za-z][A-Za-z0-9]{5,}"
+          placeholder="Enter band username"
+          required
+        />
+
+        <!-- Band email -->
+        <label class="required" for="email_band">*Email:</label>
+        <input
+          type="email"
+          name="email_band"
+          id="email_band"
+          placeholder="Enter band email"
+          required
+        />
+
+        <!-- Band password: 8-14 characters -->
+        <label class="required" for="band-password">*User Password:</label>
+        <input
+          type="password"
+          name="password_band"
+          id="band-password"
+          minlength="8"
+          maxlength="14"
+          placeholder="Enter password"
+          required
+        />
+
+        <!-- Band password confirmation -->
+        <label class="required" for="band-confirm_password"
+          >*Verify Password:</label
+        >
+        <input
+          type="password"
+          name="confirm_password_band"
+          id="band-confirm_password"
+          minlength="8"
+          maxlength="14"
+          placeholder="Confirm password"
+          required
+        />
+
+        <!-- Band name: 3-30 characters -->
+        <label class="required" for="band_name">*Band Name:</label>
+        <input
+          type="text"
+          name="band_name"
+          id="band_name"
+          minlength="3"
+          maxlength="30"
+          placeholder="Enter band name"
+          required
+        />
+
+        <!-- Music genres: comma-separated list up to 200 chars -->
+        <label class="required" for="music_genres">*Music Genre:</label>
+        <input
+          type="text"
+          name="music_genres"
+          id="music_genres"
+          minlength="3"
+          maxlength="200"
+          placeholder="Enter music genres"
+          required
+        />
+
+        <!-- Band description: textarea for longer text (3-1000 chars) -->
+        <label class="required" for="band_description"
+          >*Band Description:</label
+        >
+        <textarea
+          name="band_description"
+          id="band_description"
+          minlength="3"
+          maxlength="1000"
+          placeholder="Describe your band"
+          required
+        ></textarea>
+
+        <!-- Number of band members: 1-10 -->
+        <label class="required" for="band_members">*Number of members:</label>
+        <input
+          type="number"
+          name="band_members"
+          id="band_members"
+          min="1"
+          max="10"
+          placeholder="Number of members"
+          required
+        />
+
+        <!-- Year band was founded: 1960-2025 -->
+        <label class="required" for="band_year">*Year of foundation:</label>
+        <input
+          type="number"
+          name="band_year"
+          id="band_year"
+          min="1960"
+          max="2025"
+          placeholder="Year founded"
+          required
+        />
+
+        <!-- Band city: 3-30 characters -->
+        <label class="required" for="band_city">*City of Band:</label>
+        <input
+          type="text"
+          name="band_city"
+          id="band_city"
+          minlength="3"
+          maxlength="30"
+          placeholder="Enter band city"
+          required
+        />
+
+        <!-- Band phone: 10-14 digits only -->
+        <label class="required" for="band_phone">*Phone Number:</label>
+        <input
+          type="tel"
+          name="telephone"
+          id="band_phone"
+          pattern="[0-9]{10,14}"
+          placeholder="Enter band phone"
+          required
+        />
+
+        <!-- Optional webpage URL -->
+        <label for="webpage">Webpage Link:</label>
+        <input
+          type="url"
+          name="webpage"
+          id="webpage"
+          placeholder="http://yourwebsite.com"
+        />
+
+        <!-- Optional photo URL -->
+        <label for="photo">Photo Link:</label>
+        <input
+          type="url"
+          name="photo"
+          id="photo"
+          placeholder="http://yourphoto.com"
+        />
+
+        <!-- Action buttons: show password and check password strength -->
+        <div class="band-bottom">
+          <div class="band-show-password">show password</div>
+          <div class="band-check-streangth">check password</div>
+        </div>
+
+        <!-- Message container for form feedback -->
+        <div class="band-message"></div>
+
+        <p class="paragraphLogin">
+          Already have an account?
+          <a class="linkLogin" href="./index.html">Login</a>
+        </p>
+        <!-- Submit button -->
+        <button class="submitbtton" type="submit">Register</button>
+      </form>
+    </div>
+  </body>
+  <!-- External JavaScript files for functionality -->
+  <script src="./JS/button.js"></script>
+  <script src="./JS/validation.js"></script>
+  <script src="./JS/map.js"></script>
+</html>

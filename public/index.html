@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <!-- INDEX.HTML | LOGIN PAGE -->
+  <head>
+    <meta charset="UTF-8" />
+    <title>Exercise 3 | Log in</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Allready have an account , login from this page."
+    />
+    <meta name="keywords" content="csd, personal, website, hy359,login" />
+    <meta name="author" content="Apostolakis Giorgos" />
+    <link rel="stylesheet" href="./CSS/login.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Login</h1>
+      <form id="SimpleUserForm">
+        <input
+          type="text"
+          name="username"
+          id="simpleUsername"
+          minlength="6"
+          pattern="[A-Za-z][A-Za-z0-9]{5,}"
+          placeholder="Username"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          id="simplePassword"
+          minlength="8"
+          maxlength="14"
+          placeholder="Password"
+          required
+        />
+        <select name="type" id="simpleType" required>
+          <option value="Simple User">Simple User</option>
+          <option value="Band User">Band User</option>
+        </select>
+        <div id="messagebox"></div>
+
+        <button class="submitbtton" type="submit">
+          Login
+        </button>
+      </form>
+      <form id="BandUserForm">
+        <input
+          type="text"
+          name="username"
+          id="bandUsername"
+          minlength="6"
+          pattern="[A-Za-z][A-Za-z0-9]{5,}"
+          placeholder="Band username"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          id="bandPassword"
+          minlength="8"
+          maxlength="14"
+          placeholder="Password"
+          required
+        />
+        <select name="type" id="bandType" required>
+          <option value="Simple User">Simple User</option>
+          <option value="Band User">Band User</option>
+        </select>
+        <div id="bandmessagebox"></div>
+        <button class="submitbtton" type="submit">
+          Login
+        </button>
+      </form>
+      <p>Don't have an account? <a href="./register.html">Register</a></p>
+    </div>
+  </body>
+  <script>
+    let simpleType = document.getElementById("simpleType");
+    let bandType = document.getElementById("bandType");
+
+    function updateForms(value) {
+      simpleType.value = value; // keep them in sync
+      bandType.value = value; // keep them in sync
+
+      if (value === "Band User") {
+        document.body.style.backgroundColor = "#f79fceff";
+        document.getElementById("BandUserForm").style.display = "block";
+        document.getElementById("SimpleUserForm").style.display = "none";
+      } else {
+        document.body.style.backgroundColor = "#adf8db";
+        document.getElementById("BandUserForm").style.display = "none";
+        document.getElementById("SimpleUserForm").style.display = "block";
+      }
+    }
+    
+    // Event listeners
+    simpleType.onchange = function () {
+      updateForms(this.value);
+    };
+
+    bandType.onchange = function () {
+      updateForms(this.value);
+    };
+    
+    // Initialize forms
+    updateForms("Simple User");
+  </script>
+  <script src="./JS/loginCheck.js"></script>
+</html>

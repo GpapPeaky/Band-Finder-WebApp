@@ -1,0 +1,319 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Exercise 3 | Update user</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Allready logged in ? Update your users credentials"
+    />
+    <meta name="keywords" content="csd, personal, website, hy359" />
+    <meta name="author" content="Apostolakis Giorgos" />
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <link rel="stylesheet" href="./CSS/navigation.css">
+  </head>
+  <body>
+    <!-- Main container for simple user form -->
+    <div class="container">
+      <div class="modeSelector">
+        <ul>
+          <li><a href="./userUpdate.html">Update User</a></li>
+          <li><a href="./review.html">Leave a Review</a></li>
+          <li><a href="./main3.html">Community Reviews</a></li>
+        </ul>
+      </div>
+      <h1>Update User Profile</h1>
+
+      <form id="profileForm">
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" disabled />
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" disabled />
+
+        <label class="required" for="password">Password:</label>
+        <input
+          type="text"
+          name="password"
+          id="password"
+          minlength="8"
+          maxlength="14"
+          placeholder="Enter your password"
+          required
+        />
+
+        <label class="required" for="firstname">First Name:</label>
+        <input
+          type="text"
+          name="firstname"
+          id="firstname"
+          minlength="3"
+          maxlength="30"
+          pattern="[A-Za-zΑ-Ωα-ω\s]+"
+          placeholder="Enter your first name"
+          required
+        />
+
+        <label class="required" for="lastname">Last Name:</label>
+        <input
+          type="text"
+          name="lastname"
+          id="lastname"
+          minlength="3"
+          maxlength="30"
+          pattern="[A-Za-zΑ-Ωα-ω\s]+"
+          placeholder="Enter your last name"
+          required
+        />
+
+        <label class="required" for="birthdate">Birthdate:</label>
+        <input type="text" name="birthdate" id="birthdate" required />
+
+        <label class="required">Gender:</label>
+        <div class="gender-select">
+          <div class="gender">
+            <input type="radio" name="gender" value="male" id="male" required />
+            <label for="male">Male</label>
+          </div>
+          <div class="gender">
+            <input
+              type="radio"
+              name="gender"
+              value="female"
+              id="female"
+              required
+            />
+            <label for="female">Female</label>
+          </div>
+        </div>
+
+        <label class="required" for="country">Country:</label>
+        <select name="country" id="country" required>
+          <option value="Greece">Greece</option>
+          <option value="Germany">Germany</option>
+          <option value="France">France</option>
+          <option value="Italy">Italy</option>
+          <option value="Spain">Spain</option>
+          <option value="Poland">Poland</option>
+          <option value="Romania">Romania</option>
+          <option value="Netherlands">Netherlands</option>
+          <option value="Belgium">Belgium</option>
+          <option value="Austria">Austria</option>
+          <option value="Hungary">Hungary</option>
+          <option value="Portugal">Portugal</option>
+          <option value="Sweden">Sweden</option>
+          <option value="Czechia">Czechia</option>
+          <option value="Finland">Finland</option>
+          <option value="Denmark">Denmark</option>
+          <option value="Bulgaria">Bulgaria</option>
+          <option value="Slovakia">Slovakia</option>
+          <option value="Ireland">Ireland</option>
+          <option value="Croatia">Croatia</option>
+          <option value="Cyprus">Cyprus</option>
+        </select>
+
+        <label class="required" for="city">City:</label>
+        <input
+          type="text"
+          name="city"
+          id="city"
+          minlength="3"
+          maxlength="30"
+          placeholder="Enter your city"
+          required
+        />
+
+        <label class="required" for="address">Address:</label>
+        <input
+          type="text"
+          name="address"
+          id="address"
+          minlength="5"
+          maxlength="150"
+          placeholder="Enter your address"
+          required
+        />
+
+        <label class="required" for="phone">Phone Number:</label>
+        <input
+          type="tel"
+          name="telephone"
+          id="phone"
+          pattern="[0-9]{10,14}"
+          placeholder="Enter your phone number"
+          required
+        />
+        <a
+          class="logout"
+          onclick="logout()"
+          style="
+            cursor: pointer;
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            color: rgb(85, 85, 255);
+            text-decoration: underline;
+          "
+        >
+          logout
+        </a>
+        <div id="message"></div>
+        <button class="submitbtton" type="submit">Update Profile</button>
+      </form>
+    </div>
+    <script src="./JS/validation.js"></script>
+    <script>
+      function checkSession() {
+        const user = localStorage.getItem("currentUser");
+        const userType = localStorage.getItem("userType");
+        const loginTime = localStorage.getItem("loginTime");
+
+        if (!user || !userType || !loginTime) {
+          return null;
+        }
+
+        const sessionDuration = 24 * 60 * 60 * 1000;
+        const currentTime = Date.now();
+
+        if (currentTime - loginTime > sessionDuration) {
+          logout();
+          return null;
+        }
+
+        return {
+          user: JSON.parse(user),
+          userType: userType,
+        };
+      }
+
+      function logout() {
+        localStorage.removeItem("currentUser");
+        localStorage.removeItem("userType");
+        localStorage.removeItem("loginTime");
+        window.location.href = "index.html";
+      }
+
+      // Check if user is logged in
+      const session = checkSession();
+      if (!session || session.userType !== "simple") {
+        alert("Please login first!");
+        window.location.href = "index.html";
+      }
+
+      // Load user data
+      document.addEventListener("DOMContentLoaded", function () {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+
+        if (user) {
+          // Populate form fields
+          document.getElementById("username").value = user.username || "";
+          document.getElementById("email").value = user.email || "";
+          document.getElementById("firstname").value = user.firstname || "";
+          document.getElementById("lastname").value = user.lastname || "";
+          document.getElementById("password").value = user.password || "";
+          if (user.birthdate) {
+            let birthdateValue = user.birthdate;
+            // If it's an ISO string like "1979-12-31T22:00:00.000Z"
+            if (
+              typeof birthdateValue === "string" &&
+              birthdateValue.includes("T")
+            ) {
+              // Extract just the date part (before the 'T')
+              birthdateValue = birthdateValue.split("T")[0];
+            }
+            // If it's already in YYYY-MM-DD format, keep it as is
+            document.getElementById("birthdate").value = birthdateValue || "";
+          } else {
+            document.getElementById("birthdate").value = "";
+          }
+          if (user.gender === "male") {
+            document.getElementById("male").checked = true;
+          } else if (user.gender === "female") {
+            document.getElementById("female").checked = true;
+          }
+
+          document.getElementById("country").value = user.country || "";
+          document.getElementById("city").value = user.city || "";
+          document.getElementById("address").value = user.address || "";
+          document.getElementById("phone").value = user.telephone || "";
+        }
+      });
+
+      // Handle form submission
+      document
+        .getElementById("profileForm")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const messageBox = document.getElementById("message");
+          const password = document.getElementById("password").value;
+
+          // Check password length
+          if (password.length < 8) {
+            messageBox.textContent =
+              "Password must be at least 8 characters long!";
+            messageBox.style.color = "red";
+            messageBox.style.padding = "0.5rem";
+            return;
+          }
+
+          // Run all validation checks
+          if (!numberPercentageCheck(password, messageBox)) return;
+          if (hasMajorityCharacter(password, messageBox)) return;
+
+          if (validateStrength(password) === -1) {
+            messageBox.textContent = "Password is too weak!";
+            messageBox.style.color = "red";
+            messageBox.style.padding = "0.5rem";
+            return;
+          }
+
+          // All checks passed - get form data
+          clearMessage(messageBox);
+          const user = JSON.parse(localStorage.getItem("currentUser"));
+          const formData = new FormData(this);
+          const jsonData = Object.fromEntries(formData.entries());
+
+          // Add username and email (from localStorage, not from form)
+          jsonData.username = user.username;
+          jsonData.email = user.email;
+
+          console.log("=== FORM DATA BEING SENT ===");
+          console.log("Field names:", Object.keys(jsonData));
+          console.log("Full data:", JSON.stringify(jsonData, null, 2));
+
+          try {
+            const response = await fetch("/update-user", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(jsonData),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              localStorage.setItem("currentUser", JSON.stringify(jsonData));
+
+              // success message
+              messageBox.textContent = "Profile updated successfully!";
+              messageBox.style.color = "green";
+              messageBox.style.padding = "0.5rem";
+            } else {
+              // failure message
+              messageBox.textContent =
+                result.error || "Failed to update profile";
+              messageBox.style.color = "red";
+              messageBox.style.padding = "0.5rem";
+            }
+          } catch (error) {
+            // failure message on catching exception
+            messageBox.textContent = "Error updating profile: " + error.message;
+            messageBox.style.color = "red";
+            messageBox.style.padding = "0.5rem";
+          }
+        });
+    </script>
+  </body>
+</html>
