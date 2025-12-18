@@ -141,37 +141,52 @@ app.get("/band/details", async (req, res) => {
 });
 
 app.post("/update-user", async (req, res) => {
-  console.log("/update-user: Received body:", req.body);
-
   try {
     const data = req.body;
 
-    // Validate that we have data
-    if (!data || Object.keys(data).length === 0) {
-      console.error("Empty request body received");
-      return res.status(400).json({
-        success: false,
-        error: "No data received",
-        mytype: "none",
-      });
+    if (!data.address || data.address.trim() === "") {
+      return res.status(400).json({ success: false, error: "Address is required" });
     }
 
-    const telephoneTaken = await phoneExistsSimpleForother(
-      data.username,
-      data.telephone
-    );
-
-    if (telephoneTaken) {
-      return res.status(409).json({
-        success: false,
-        error: "An account already exists using this phone number",
-        mytype: "sameusername",
-      });
+    if (!data.username) {
+      return res.status(400).json({ success: false, error: "Username is required" });
     }
 
+    // ================== GEOCODING ==================
+    let lat = parseFloat(data.lat);
+    let lon = parseFloat(data.lon);
+
+    if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
+      const query = `${data.address}, ${data.city}, ${data.country}`;
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=1`;
+
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "User-Agent": "app/1.0 (csd5185@csd.uoc.gr)",
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) throw new Error(`Nominatim API error: ${response.status}`);
+
+        const osmData = await response.json();
+
+        if (!osmData || osmData.length === 0) {
+          return res.status(400).json({ success: false, error: "Address not found on map" });
+        }
+
+        lat = parseFloat(osmData[0].lat);
+        lon = parseFloat(osmData[0].lon);
+      } catch (err) {
+        console.error("OSM error:", err);
+        return res.status(500).json({ success: false, error: "Failed to validate address via map" });
+      }
+    }
+
+    // ================== UPDATE DATABASE ==================
     const result = await updateUser(
       data.username,
-      data.email,
       data.password,
       data.firstname,
       data.lastname,
@@ -180,28 +195,15 @@ app.post("/update-user", async (req, res) => {
       data.country,
       data.city,
       data.address,
-      data.telephone
+      lon,
+      lat
     );
-    console.log("User insert result:", result);
 
-    return res.status(200).json({
-      success: true,
-      redirect: "/",
-      message: "User updated successfully!",
-      mytype: "none",
-    });
+    return res.status(200).json(result);
+
   } catch (err) {
-    console.error("=== REGISTRATION ERROR ===");
-    console.error("Error details:", err);
-    console.error("Error message:", err.message);
-    console.error("Error stack:", err.stack);
-
-    // Always return JSON, otherwise it gives an error
-    return res.status(500).json({
-      success: false,
-      error: "Server registration error: " + err.message,
-      mytype: "none",
-    });
+    console.error("Update-user error:", err);
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 
@@ -278,6 +280,31 @@ app.post("/register", async (req, res) => {
         });
       }
 
+      // Address check.
+      if (!data.address || data.address.trim() === "") {
+        return res.status(400).json({
+          success: false,
+          error: "Address is required",
+        });
+      }
+      
+      if (!data.lat || !data.lon) {
+        return res.status(400).json({
+          success: false,
+          error: "Address must be validated on the map",
+        });
+      }
+      
+      const lat = parseFloat(data.lat);
+      const lon = parseFloat(data.lon);
+      
+      if (isNaN(lat) || isNaN(lon)) {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid address coordinates",
+        });
+      }
+
       const result = await insertBand(bandData);
       console.log("Band insert result:", result);
 
@@ -300,8 +327,8 @@ app.post("/register", async (req, res) => {
         city: data.city,
         address: data.address,
         telephone: data.telephone,
-        lat: null,
-        lon: null,
+        lat: data.lat,
+        lon: data.lon,
       };
 
       console.log("Converted User data:", userData);

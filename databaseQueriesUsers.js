@@ -41,7 +41,6 @@ async function getUserByCredentials(username, password) {
 }
 async function updateUser(
   username,
-  email,
   password,
   firstname,
   lastname,
@@ -50,7 +49,8 @@ async function updateUser(
   country,
   city,
   address,
-  telephone
+  lon,
+  lat
 ) {
   let conn;
   try {
@@ -67,10 +67,11 @@ async function updateUser(
         country = ?,
         city = ?,
         address = ?,
-        telephone = ?
-      WHERE username = ? AND email = ?
+        lon = ?,
+        lat = ?
+      WHERE username = ?
     `;
-
+    
     const [result] = await conn.execute(updateQuery, [
       password,
       firstname,
@@ -80,11 +81,11 @@ async function updateUser(
       country,
       city,
       address,
-      telephone,
-      username,
-      email,
+      lon,
+      lat,
+      username, // username for WHERE clause
     ]);
-
+    
     if (result.affectedRows === 0) {
       return {
         success: false,

@@ -299,6 +299,16 @@ async function validateSimpleUserForm(event) {
     return;
   }
 
+  const lat = document.getElementById("lat").value;
+  const lon = document.getElementById("lon").value;
+
+  if (!lat || !lon) {
+    messageBox.textContent = "Please validate your address to get coordinates!";
+    messageBox.style.color = "red";
+    messageBox.style.padding = "0.5rem";
+    return;
+  }
+
   // All checks passed - display form data as JSON
   clearMessage(messageBox);
   const formData = new FormData(event.target);

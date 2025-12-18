@@ -8,6 +8,13 @@ let validatedLon = null;
     document.getElementById("showMapBtn").style.display = "none";
     document.getElementById("mapContainer").style.display = "none";
     document.getElementById("osmMessage").innerText = "";
+
+    // Reset coords.
+    validatedLat = null;
+    validatedLon = null;
+
+    document.getElementById("lat").value = "";
+    document.getElementById("lon").value = "";
   });
 });
 
@@ -66,6 +73,10 @@ document
 
       validatedLat = parseFloat(result.lat);
       validatedLon = parseFloat(result.lon);
+
+      // Validated cooridinates, stored in hidden fields.
+      document.getElementById("lat").value = validatedLat;
+      document.getElementById("lon").value = validatedLon;
 
       msg.style.color = "green";
 
