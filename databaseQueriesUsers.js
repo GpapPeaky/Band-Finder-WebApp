@@ -49,6 +49,7 @@ async function updateUser(
   country,
   city,
   address,
+  telephone,
   lon,
   lat
 ) {
@@ -67,6 +68,7 @@ async function updateUser(
         country = ?,
         city = ?,
         address = ?,
+        telephone = ?,
         lon = ?,
         lat = ?
       WHERE username = ?
@@ -81,6 +83,7 @@ async function updateUser(
       country,
       city,
       address,
+      telephone,
       lon,
       lat,
       username, // username for WHERE clause

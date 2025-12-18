@@ -184,6 +184,19 @@ app.post("/update-user", async (req, res) => {
       }
     }
 
+    const telephoneTaken = await phoneExistsSimpleForother(
+      data.username,
+      data.telephone
+    );
+
+    if (telephoneTaken) {
+      return res.status(409).json({
+        success: false,
+        error: "An account already exists using this phone number",
+        mytype: "sameusername",
+      });
+    }
+
     // ================== UPDATE DATABASE ==================
     const result = await updateUser(
       data.username,
@@ -195,6 +208,7 @@ app.post("/update-user", async (req, res) => {
       data.country,
       data.city,
       data.address,
+      data.telephone,
       lon,
       lat
     );
