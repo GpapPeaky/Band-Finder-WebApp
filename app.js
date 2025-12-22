@@ -42,6 +42,7 @@ const {
   deleteBand,
   bandExists,
 } = require("./databaseQueriesBands");
+const { send } = require("process");
 
 const app = express();
 const PORT = 3000;
@@ -775,48 +776,6 @@ events: events.map((event) => ({
 
 */
 
-// Get bands in private events by date
-app.get("/bands/priv-events/:event_date", (req, res) => {
-  console.log("Event date:", req.params.event_date);
-  console.log("Query params:", req.query);
-
-  try {
-    const event_date = req.params.event_date;
-
-    // Get bands from database, private bands
-    // TODO
-    const bands = await getPrivateBandsAtDate(event_date);
-
-    // Format response
-    const response = {
-      success: true,
-      event_date: event_date,
-      count: bands.length,
-      bands: bands.map((band) => ({
-        username: band.username,
-        email: band.email,
-        band_name: band.band_name,
-        music_genres: band.music_genres,
-        band_description: band.band_description,
-        members_number: band.members_number,
-        foundedYear: band.foundedYear,
-        band_city: band.band_city,
-        telephone: band.telephone,
-        webpage: data.webpage || null,
-        photo: data.photo || null,
-      })),
-    };
-
-    return res.status(200).json(response);
-  } catch (err) {
-    console.error("Error getting bands in private events: ", err);
-    return res.status(500).json({
-      success: false,
-      error: "Server error: " + err.message,
-    });
-  }
-});
-
 // Get bands in public events by date
 app.get("/bands/pub-events/:event_date", (req, res) => {
   console.log("Event date:", req.params.event_date);
@@ -852,48 +811,6 @@ app.get("/bands/pub-events/:event_date", (req, res) => {
     return res.status(200).json(response);
   } catch (err) {
     console.error("Error getting bands in public events: ", err);
-    return res.status(500).json({
-      success: false,
-      error: "Server error: " + err.message,
-    });
-  }
-});
-
-// Get bands based on private event type
-app.get("/bands/priv-events/:event_type", (req, res) => {
-  console.log("Event type:", req.params.event_type);
-  console.log("Query params:", req.query);
-
-  try {
-    const event_type = req.params.event_type;
-
-    // Get bands from database
-    // TODO
-    const bands = await getBandsByPrivateEventType(event_type);
-
-    // Format response
-    const response = {
-      success: true,
-      event_type: event_type,
-      count: bands.length,
-      bands: bands.map((band) => ({
-        username: band.username,
-        email: band.email,
-        band_name: band.band_name,
-        music_genres: band.music_genres,
-        band_description: band.band_description,
-        members_number: band.members_number,
-        foundedYear: band.foundedYear,
-        band_city: band.band_city,
-        telephone: band.telephone,
-        webpage: data.webpage || null,
-        photo: data.photo || null,
-      })),
-    };
-
-    return res.status(200).json(response);
-  } catch (err) {
-    console.error("Error getting bands by event type:", err);
     return res.status(500).json({
       success: false,
       error: "Server error: " + err.message,
@@ -943,52 +860,6 @@ app.get("/bands/pub-events/:event_type", (req, res) => {
   }
 });
 
-// Get bands based on private event price
-app.get("/bands/priv-events/:price", (req, res) => {
-  console.log("Event price:", req.params.price);
-  console.log("Query params:", req.query);
-
-  try {
-    const price = parseFloat(req.params.price);
-    if (isNaN(price) || price < 0) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid price parameter",
-      });
-    }
-    // Get bands from database
-    // TODO
-    const bands = await getBandsByPrivateEventPrice(price);
-
-    // Format response
-    const response = {
-      success: true,
-      price: price,
-      count: bands.length,
-      bands: bands.map((band) => ({
-        username: band.username,
-        email: band.email,
-        band_name: band.band_name,
-        music_genres: band.music_genres,
-        band_description: band.band_description,
-        members_number: band.members_number,
-        foundedYear: band.foundedYear,
-        band_city: band.band_city,
-        telephone: band.telephone,
-        webpage: data.webpage || null,
-        photo: data.photo || null,
-      })),
-    };
-
-    return res.status(200).json(response);
-  } catch (err) {
-    console.error("Error getting bands by event price:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Server error: " + err.message,
-    });
-  }
-});
 
 // Get bands based on public event price
 app.get("/bands/pub-events/:price", (req, res) => {
@@ -1037,49 +908,6 @@ app.get("/bands/pub-events/:price", (req, res) => {
   }
 });
 
-// Get private events for a specific band by band name
-app.get("/priv-events/:band_name", (req, res) => {
-  console.log("Band name:", req.params.band_name);
-  console.log("Query params:", req.query);
-
-  try {
-    const band_name = req.params.band_name;
-    // Get private events from database
-    // TODO
-    const events = await getPrivateEventsByBandName(band_name);
-
-    // Format response
-    const response = {
-      success: true,
-      band_name: band_name,
-      count: events.length,
-      events: events.map((event) => ({
-        private_event_id: event.private_event_id,
-        band_id: event.band_id,
-        price: event.price,
-        status: event.status,
-        band_decision: event.band_decision,
-        user_id: event.user_id,
-        event_type: event.event_type,
-        event_datetime: event.event_datetime,
-        event_description: event.event_description,
-        event_city: event.event_city,
-        event_address: event.event_address,
-        event_lat: event.event_lat,
-        event_lon: event.event_lon,
-      })),
-    };
-
-    return res.status(200).json(response);
-  } catch (err) {
-    console.error("Error getting private events by band name:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Server error: " + err.message,
-    });
-  }
-});
-
 // Get public events for a specific band by band name
 app.get("/pub-events/:band_name", (req, res) => {
   console.log("Band name:", req.params.band_name);
@@ -1120,7 +948,117 @@ app.get("/pub-events/:band_name", (req, res) => {
   }
 });
 
-// Update band schedule, all dates given will replace existing ones as available
-app.post("bands/update-schedule/:band_name", (req, res) => {
-  console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
+// Update band schedule, add a date that the band is available
+// otherwise it will be thought as unavailable
+app.post("bands/addAvailability", (req, res) => {
+    console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
+});
+
+// Update band schedule, remove a date that the band is available
+app.delete("bands/removeAvailability", (req, res) => {
+    console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
+});
+
+// remove a user with a specific name if he exists
+app.delete("admin/removeUser/:user_name", (req, res) => {
+    // TODO: Check if admin is logged in
+    if (checkIfLoggedInAsAdmin(req)) {
+      try {
+          const user_name = req.params.user_name;
+          // Remove user from database
+          // TODO
+          const result = await removeUserByName(user_name);
+
+          return res.status(200).json({
+              success: true,
+              message: `User ${user_name} removed successfully`,
+          });
+
+      } catch(err){
+          console.error("Error removing user:", err);
+          return res.status(500).json({
+              success: false,
+              error: "Server error: " + err.message,
+          });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden: Admin access required",
+      });
+    }
+
+});
+
+// Get admin details
+app.get("admin/details", (req, res) => {
+    if (checkIfLoggedInAsAdmin(req)) {
+      try {
+          const adminDetails = await getAdminDetails();
+          return res.status(200).json({
+              success: true,
+              adminDetails: adminDetails,
+          });
+      } catch(err){
+          console.error("Error getting admin details:", err);
+          return res.status(500).json({
+              success: false,
+              error: "Server error: " + err.message,
+          });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden: Admin access required",
+      });
+    }
+
+});
+
+// User sends a message to a band, through input fields
+app.post("sendMessage", (req, res) => {
+    try {
+      const data = req.body;
+
+      // Validate required fields
+      if (!data.sender || !data.band_name || !data.message || !data.event_id || !data.senderType) {
+        return res.status(400).json({
+          success: false,
+          error: "Missing required message fields",
+        });
+      }
+
+      if (data.senderType === "user") {
+        sendMessageToBand(data.sender, data.band_name, data.message, data.event_id);
+      } else if (data.senderType === "band") {
+        sendMessageToUser(data.sender, data.band_name, data.message, data.event_id);
+      } else {
+        return res.status(400).json({
+          success: false,
+          error: "Invalid senderType, must be 'user' or 'band'",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Message sent successfully!",
+      });
+
+    } catch (err) {
+      console.error("Error sending message:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Server error: " + err.message,
+      });
+    }
+});
+
+// Band can creates a public event
+app.post("createEvent", (req, res) => {
+    console.log("=== CREATE PUBLIC EVENT ENDPOINT HIT ===");
+});
+
+// User requests a band for an event
+app.post("requestBand", (req, res) => {
+    console.log("=== REQUEST BAND ENDPOINT HIT ===");
 });

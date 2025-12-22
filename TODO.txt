@@ -31,10 +31,22 @@ API CALLS:          DESC                                                        
                     -- Get bands via event type                                        bands/events/:event_type                 event_type                              {band_name1, ...}
                     -- Get bands via event cost                                        bands/events/:price                      vent_cost                               {band_name1, ...}
                  
-                    -- Get events via band name if the bands is at the event           events/:band_name                        band_name                               {event_id1, event_id2}
+                    // EXPAND TO ONE CALL
+                    // FOR ALL THE OTHER QUERIES
+                    - Get events via band name if the bands is at the event           events/:band_name                        band_name                               {event_id1, event_id2}
                                  
-                    -- Update band availability                                        bands/update-schedule/:band_name         {band_name, date1...}                   {event_id} // The updated one
+                    // We hypothesize that bands ARE ALWAYS UNAVAILABLE
+                    - Update band availability, add                                        bands/add-available/:band_name         {band_name, date}                   {event_id} // The updated one
+                    - Update band availability, remove                                     bands/remove-available/:band_name      {band_name, date}                   {event_id} // The removed one
 
+                    // Admin shit
+                    - Admin removes user from DB                              admin/removeUser/:username                        admin credentials                       {status,username}
+                    - Admin Log in / check username,password                  admin/details                               username,password                       {status}
+                    
+                    -- User sends message to band                             sendMessage                                 sender,reciever,message                 {status}
+                    - Band creates an event priv                              createEvent/priv                                 eventfields,bandname,password           {status+some event fields}
+                    - Band creates an event public                            createEvent/public                                 eventfields,bandname,password           {status+some event fields}
+                    - User can request a band to play at certain date         requestBand                                 bandname, ...idk yet skase...           {status}
                     
 
 
