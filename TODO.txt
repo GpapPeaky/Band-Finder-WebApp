@@ -26,15 +26,18 @@ todo:
 
     users can see events sorted by distance
 
-API CALLS:          DESC                                                            ROUTE                                    IN                          OUT
-                    Get bands via event date                                        bands/event-date/:date                   event_date                  {band_name1, ...}
-                    Get bands via event type                                        bands/event-type/:type                   event_type                  {band_name1, ...}
-                    Get bands via event cost                                        bands/event-type/:cost                   event_cost                  {band_name1, ...}
-     
-                    Get events via band name if the bands is at the event           events/:band_name                        band_name                   {event_id1, event_id2}
+API CALLS:          DESC                                                            ROUTE                                    IN                                      OUT
+                    -- Get bands via event date                                        bands/events/:event_date                 event_date                              {band_name1, ...}
+                    -- Get bands via event type                                        bands/events/:event_type                 event_type                              {band_name1, ...}
+                    -- Get bands via event cost                                        bands/events/:price                      vent_cost                               {band_name1, ...}
+                 
+                    -- Get events via band name if the bands is at the event           events/:band_name                        band_name                               {event_id1, event_id2}
+                                 
+                    -- Update band availability                                        bands/update-schedule/:band_name         {band_name, date1...}                   {event_id} // The updated one
+
                     
-                    Update private event info                                       events/update-pirv-event/:event_id       event_id                    {event_id} // The updated one.
-                    Update band availability                                        bands/update-sched/:band_name            band_name                   {band_name} // The updated one
+
+
 
 Chat Gtp:
 
