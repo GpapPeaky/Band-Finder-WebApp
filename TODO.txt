@@ -33,13 +33,15 @@ Get bands via event type                                bands/event-type/:type  
 Get bands via event cost                                bands/event-type/:cost                      event_cost                              {band_name1, ...}
 Get events via band name if the bands is at the event   events/:band_name                           band_name                               {event_id1, event_id2}
 Update private event info                               events/update-pirv-event/:event_id          event_id                                {event_id} // The updated one.
-Update band availability                                bands/update-sched/:band_name               band_name                               {band_name} // The updated one
 Admin removes user from DB                              removeUser/:username                        admin credentials                       {status,username}
 User sends message to band                              sendMessage                                 sender,reciever,message                 {status}
 Creates an event                                        createEvent                                 eventfields,bandname,password           {status+some event fields}
 Admin Log in / check username,password                  admin/details                               username,password                       {status}
-User can request a band to play at certain date         requestBand                                 bandname, ...idk yet skase...           {status}
-
+User can request a band to play at certain date         requestBand                                 bandname,username,password ,Date ,...   {status}
+A band sets new dates of availability                   setAvailability                             bandname,password,date                  {status}
+A user sees when a certain band is available            seeAvailability/:bandname                                                           {Date1 , Date2,...}
+A user can see events based on critiria                 getEventsBasedOn/:filter{date/genre/loca}                                           {event1,....}
+Admin statistic bands per city                          bandsPerCity                                admin credentials                       {city1,number1,....}
 
 Chat Gtp:
 
