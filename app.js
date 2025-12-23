@@ -908,46 +908,6 @@ app.get("/bands/pub-events/:price", (req, res) => {
   }
 });
 
-// Get public events for a specific band by band name
-app.get("/pub-events/:band_name", (req, res) => {
-  console.log("Band name:", req.params.band_name);
-  console.log("Query params:", req.query);
-
-  try {
-    const band_name = req.params.band_name;
-    // Get public events from database
-    // TODO
-    const events = await getPublicEventsByBandName(band_name);
-
-    // Format response
-    const response = {
-      success: true,
-      band_name: band_name,
-      count: events.length,
-      events: events.map((event) => ({
-        public_event_id: event.public_event_id,
-        band_id: event.band_id,
-        event_type: event.event_type,
-        event_datetime: event.event_datetime,
-        event_description: event.event_description,
-        participants_price: event.participants_price,
-        event_city: event.event_city,
-        event_address: event.event_address,
-        event_lat: event.event_lat,
-        event_lon: event.event_lon,
-      })),
-    };
-
-    return res.status(200).json(response);
-  } catch (err) {
-    console.error("Error getting public events by band name:", err);
-    return res.status(500).json({
-      success: false,
-      error: "Server error: " + err.message,
-    });
-  }
-});
-
 // Update band schedule, add a date that the band is available
 // otherwise it will be thought as unavailable
 app.post("bands/addAvailability", (req, res) => {
@@ -1015,6 +975,21 @@ app.get("admin/details", (req, res) => {
 
 });
 
+// Admin gets number of bands per city
+app.get("admin/bandsPerCity", (req, res) => {
+    // if (checkIfLoggedInAsAdmin(req)) {
+});
+
+// Admin gets the number of events
+app.get("admin/numOfEvents/:type", (req, res) => {
+    // if (checkIfLoggedInAsAdmin(req)) {
+});
+
+// Admin gets the number of users
+app.get("admin/numOfUsers/:type", (req, res) => {
+    // if (checkIfLoggedInAsAdmin(req)) {
+});
+
 // User sends a message to a band, through input fields
 app.post("sendMessage", (req, res) => {
     try {
@@ -1061,4 +1036,19 @@ app.post("createEvent", (req, res) => {
 // User requests a band for an event
 app.post("requestBand", (req, res) => {
     console.log("=== REQUEST BAND ENDPOINT HIT ===");
+});
+
+// Get events based on a special filter
+app.get("getEventsBasedOn/:filter", (req, res) => {
+    console.log("=== GET EVENTS BASED ON FILTER ENDPOINT HIT ===");
+});
+
+// Band updates user requests
+app.post("updateRequest/", (req, res) => {
+    console.log("=== UPDATE REQUEST ENDPOINT HIT ===");
+});
+
+// Update band fields, all of em
+app.post("updateBand/", (req, res) => {
+    console.log("=== UPDATE BAND ENDPOINT HIT ===");
 });
