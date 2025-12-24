@@ -777,16 +777,15 @@ events: events.map((event) => ({
 */
 
 // Get bands in public events by date
-app.get("/bands/pub-events/:event_date", (req, res) => {
+app.get("/bands/pub-events/:event_date", async (req, res) => {
   console.log("Event date:", req.params.event_date);
   console.log("Query params:", req.query);
 
   try {
     const event_date = req.params.event_date;
 
-    // Get bands from database, private bands
-    // TODO
-    const bands = await getPublicBandsAtDate(event_date);
+    // Get bands from database bands
+    const bands = await getBandsAtDate(event_date);
 
     // Format response
     const response = {
@@ -819,7 +818,7 @@ app.get("/bands/pub-events/:event_date", (req, res) => {
 });
 
 // Get bands based on public event type
-app.get("/bands/pub-events/:event_type", (req, res) => {
+app.get("/bands/pub-events/:event_type", async (req, res) => {
   console.log("Event type:", req.params.event_type);
   console.log("Query params:", req.query);
 
@@ -827,7 +826,6 @@ app.get("/bands/pub-events/:event_type", (req, res) => {
     const event_type = req.params.event_type;
 
     // Get bands from database
-    // TODO
     const bands = await getBandsByPublicEventType(event_type);
 
     // Format response
@@ -860,7 +858,6 @@ app.get("/bands/pub-events/:event_type", (req, res) => {
   }
 });
 
-
 // Get bands based on public event price
 app.get("/bands/pub-events/:price", (req, res) => {
   console.log("Event price:", req.params.price);
@@ -875,7 +872,6 @@ app.get("/bands/pub-events/:price", (req, res) => {
       });
     }
     // Get bands from database
-    // TODO
     const bands = await getBandsByPublicEventPrice(price);
 
     // Format response
@@ -933,6 +929,7 @@ app.put("bands/addAvailability", async (req, res) => {
         }
 
         // Add availability to database
+        // FIXME: rethink ts.
         await addBandAvailability(band_name, date);
 
         return res.status(200).json({
@@ -949,7 +946,7 @@ app.put("bands/addAvailability", async (req, res) => {
 });
 
 // Update band schedule, remove a date that the band is available
-app.delete("bands/removeAvailability", (req, res) => {
+app.delete("bands/removeAvailability", async (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
 
     if(!req.body.band_name || !req.body.date || !req.body.senderType){
@@ -972,6 +969,7 @@ app.delete("bands/removeAvailability", (req, res) => {
         }
 
         // Remove availability from database
+        // FIXME: Rethink ts.
         await removeBandAvailability(band_name, date);
 
         return res.status(200).json({
@@ -988,14 +986,12 @@ app.delete("bands/removeAvailability", (req, res) => {
 });
 
 // remove a user with a specific name if he exists
-app.delete("admin/removeUser/:user_name", (req, res) => {
-    // TODO: Check if admin is logged in
+app.delete("admin/removeUser/:user_name", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const user_name = req.params.user_name;
           // Remove user from database
-          // TODO
-          const result = await removeUserByName(user_name);
+          const result = await deleteUser(user_name);
 
           return res.status(200).json({
               success: true,
@@ -1019,7 +1015,7 @@ app.delete("admin/removeUser/:user_name", (req, res) => {
 });
 
 // Get admin details
-app.get("admin/details", (req, res) => {
+app.get("admin/details", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const adminDetails = await getAdminDetails();
@@ -1042,6 +1038,9 @@ app.get("admin/details", (req, res) => {
     }
 
 });
+
+// FINISHED
+// CHECK ADMIN COOKIE, RETHINK AVAILAVILITY ROUTES.
 
 // Admin gets number of bands per city
 app.get("admin/bandsPerCity", (req, res) => {

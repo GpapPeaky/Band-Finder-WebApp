@@ -150,4 +150,22 @@ async function dropDatabase() {
   }
 }
 
-module.exports = { initDatabase, dropDatabase, getConnection };
+// Check via cookie if the credentials are that of the admin
+// username: 
+// password:
+async function checkIfLoggedInAsAdmin(req) {
+  // Use cookie.
+  // TODO.
+
+  return false;
+}
+
+// Get admin info ig.
+async function getAdminDetails() {
+  // Use cookie.
+  // TODO.
+
+  // return details;
+}
+
+module.exports = { initDatabase, dropDatabase, getConnection, checkIfLoggedInAsAdmin, getAdminDetails };
