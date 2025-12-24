@@ -910,7 +910,7 @@ app.get("/bands/pub-events/:price", (req, res) => {
 
 // Update band schedule, add a date that the band is available
 // otherwise it will be thought as unavailable
-app.post("bands/addAvailability", async (req, res) => {
+app.put("bands/addAvailability", async (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
 
     if(!req.body.band_name || !req.body.date || !req.body.senderType){
@@ -1111,7 +1111,7 @@ app.get("admin/numOfUsers/:type", (req, res) => {
 });
 
 // User sends a message to a band, through input fields
-app.post("sendMessage", (req, res) => {
+app.put("sendMessage", (req, res) => {
     try {
       const data = req.body;
 
@@ -1149,7 +1149,7 @@ app.post("sendMessage", (req, res) => {
 });
 
 // Band can creates a public event
-app.post("createEvent", (req, res) => {
+app.put("createEvent", (req, res) => {
     console.log("=== CREATE PUBLIC EVENT ENDPOINT HIT ===");
 
     try {
@@ -1169,7 +1169,7 @@ app.post("createEvent", (req, res) => {
 });
 
 // User requests a band for an event
-app.post("requestBand", (req, res) => {
+app.put("requestBand", (req, res) => {
     console.log("=== REQUEST BAND ENDPOINT HIT ===");
 
     try {
