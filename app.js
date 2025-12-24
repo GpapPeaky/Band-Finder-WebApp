@@ -910,13 +910,81 @@ app.get("/bands/pub-events/:price", (req, res) => {
 
 // Update band schedule, add a date that the band is available
 // otherwise it will be thought as unavailable
-app.post("bands/addAvailability", (req, res) => {
+app.post("bands/addAvailability", async (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
+
+    if(!req.body.band_name || !req.body.date || !req.body.senderType){
+        return res.status(400).json({
+            success: false,
+            error: "Missing required fields",
+        });
+    }
+
+    try {
+        const band_name = req.body.band_name;
+        const date = req.body.date;
+        const senderType = req.body.senderType;
+        
+        if(senderType !== "band"){
+            return res.status(403).json({
+                success: false,
+                error: "Forbidden: Only bands can update their availability",
+            });
+        }
+
+        // Add availability to database
+        await addBandAvailability(band_name, date);
+
+        return res.status(200).json({
+            success: true,
+            message: "Band availability added successfully",
+        });
+    } catch (err) {
+        console.error("Error adding band availability:", err);
+        return res.status(500).json({
+            success: false,
+            error: "Server error: " + err.message,
+        });
+    }
 });
 
 // Update band schedule, remove a date that the band is available
 app.delete("bands/removeAvailability", (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
+
+    if(!req.body.band_name || !req.body.date || !req.body.senderType){
+        return res.status(400).json({
+            success: false,
+            error: "Missing required fields",
+        });
+    }
+
+    try {
+        const band_name = req.body.band_name;
+        const date = req.body.date;
+        const senderType = req.body.senderType;
+        
+        if(senderType !== "band"){
+            return res.status(403).json({
+                success: false,
+                error: "Forbidden: Only bands can update their availability",
+            });
+        }
+
+        // Remove availability from database
+        await removeBandAvailability(band_name, date);
+
+        return res.status(200).json({
+            success: true,
+            message: "Band availability removed successfully",
+        });
+    } catch (err) {
+        console.error("Error removing band availability:", err);
+        return res.status(500).json({
+            success: false,
+            error: "Server error: " + err.message,
+        });
+    }
 });
 
 // remove a user with a specific name if he exists
@@ -977,17 +1045,69 @@ app.get("admin/details", (req, res) => {
 
 // Admin gets number of bands per city
 app.get("admin/bandsPerCity", (req, res) => {
-    // if (checkIfLoggedInAsAdmin(req)) {
+    if (checkIfLoggedInAsAdmin(req)) {
+      try {
+          const bandsPerCity = await getBandsPerCity();
+          return res.status(200).json({
+              success: true,
+              bandsPerCity: bandsPerCity,
+          });
+      } catch(err){
+          console.error("Error getting bands per city:", err);
+          return res.status(500).json({
+              success: false,
+              error: "Server error: " + err.message,
+          });
+      }
+    } else {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden: Admin access required",
+      });
+    }
 });
 
 // Admin gets the number of events
 app.get("admin/numOfEvents/:type", (req, res) => {
-    // if (checkIfLoggedInAsAdmin(req)) {
+    if (checkIfLoggedInAsAdmin(req)) {
+      try {
+          const eventType = req.params.type;
+          const numOfEvents = await getNumberOfEvents(eventType);
+          return res.status(200).json({
+              success: true,
+              eventType: eventType,
+              numOfEvents: numOfEvents,
+          });
+      } catch(err){
+          console.error("Error getting number of events:", err);
+          return res.status(500).json({
+              success: false,
+              error: "Server error: " + err.message,
+          });
+      }
+    }
 });
 
 // Admin gets the number of users
 app.get("admin/numOfUsers/:type", (req, res) => {
-    // if (checkIfLoggedInAsAdmin(req)) {
+    if (checkIfLoggedInAsAdmin(req)) {
+      try {
+          const userType = req.params.type;
+          const numOfUsers = await getNumberOfUsers(userType);
+
+          return res.status(200).json({
+              success: true,
+              userType: userType,
+              numOfUsers: numOfUsers,
+          });
+      } catch(err){
+          console.error("Error getting number of users:", err);
+          return res.status(500).json({
+              success: false,
+              error: "Server error: " + err.message,
+          });
+      }
+    }
 });
 
 // User sends a message to a band, through input fields
@@ -1031,24 +1151,119 @@ app.post("sendMessage", (req, res) => {
 // Band can creates a public event
 app.post("createEvent", (req, res) => {
     console.log("=== CREATE PUBLIC EVENT ENDPOINT HIT ===");
+
+    try {
+        const data = req.body;
+        const event = await createPublicEvent(data);
+        return res.status(200).json({
+            success: true,
+            event: event,
+        });
+    } catch (err) {
+        console.error("Error creating public event:", err);
+        return res.status(500).json({
+            success: false,
+            error: "Server error: " + err.message,
+        });
+    }
 });
 
 // User requests a band for an event
 app.post("requestBand", (req, res) => {
     console.log("=== REQUEST BAND ENDPOINT HIT ===");
+
+    try {
+        const band_name = req.body.band_name;
+        const date = req.body.date;
+        const request = await requestBandForEvent(band_name, date);
+ 
+        return res.status(200).json({
+            success: true,
+            request: request,
+        });
+    } catch (err) {
+        console.error("Error requesting band for event:", err);
+        return res.status(500).json({
+            success: false,
+            error: "Server error: " + err.message,
+        });
+    }
 });
 
 // Get events based on a special filter
 app.get("getEventsBasedOn/:filter", (req, res) => {
     console.log("=== GET EVENTS BASED ON FILTER ENDPOINT HIT ===");
+
+    try {
+        const filter = req.params.filter;
+        const events = await getEventsBasedOnFilter(filter);
+     
+        return res.status(200).json({
+            success: true,
+            filter: filter,
+            events: events,
+        });
+    } catch (err) {
+        console.error("Error getting events based on filter:", err);
+        return res.status(500).json({
+            success: false,
+            error: "Server error: " + err.message,
+        });
+    }    
 });
 
 // Band updates user requests
 app.post("updateRequest/", (req, res) => {
     console.log("=== UPDATE REQUEST ENDPOINT HIT ===");
+
+    try {
+        const data = req.body;
+        const request = await updateRequest(data);
+        return res.status(200).json({
+            success: true,
+            request: request,
+        });
+    } catch (err) {
+        console.error("Error updating request:", err);
+        return res.status(500).json({
+            success: false,
+            error: "Server error: " + err.message,
+        });
+    }
 });
 
 // Update band fields, all of em
 app.post("updateBand/", (req, res) => {
     console.log("=== UPDATE BAND ENDPOINT HIT ===");
+
+    try {
+        const data = req.body;
+        const result = await updateBand(data);
+        return res.status(200).json(result);
+    } catch (err) {
+        console.error("Update-band error:", err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// See band availability
+app.get("seeAvailability/", (req, res) => {
+    console.log("=== SEE BAND AVAILABILITY ENDPOINT HIT ===");
+
+    try { 
+        const band_name = req.body.band_name;
+        const availability = await getBandAvailability(band_name);
+        
+        return res.status(200).json({
+            success: true,
+            band_name: band_name,
+            availability: availability,
+        });
+    } catch (err) {
+        console.error("Error getting band availability:", err);
+        return res.status(500).json({
+            success: false,
+            error: "Server error: " + err.message,
+        });
+    }
 });
