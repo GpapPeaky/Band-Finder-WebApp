@@ -22,7 +22,7 @@ async function getAllBands() {
 }
 
 async function getBandIdByName() {
-  const result = await pool.query(
+  const result = await conn.query(
     "SELECT band_id FROM bands WHERE band_name = $1",
     [band_name]
   );
@@ -218,42 +218,43 @@ async function getBandsByPublicEventPrice(price) {
 // Private events created from here have a status set to available, for users to 
 // request the band at that specific date, else they can't 
 async function setBandAvailability(band_name, date) {
-  const band_id = await getBandIdByName(band_name);
+  let conn;
+  try {
+    conn = await getConnection();
+    const band_id = await getBandIdByName(band_name);
 
-  // Prevent duplicate availability for same datetime
-  const exists = await pool.query(
-    `
-    SELECT 1
-    FROM private_events
-    WHERE band_id = $1
-      AND event_datetime = $2
-      AND status = 'available'
-    `,
-    [band_id, date]
-  );
+    const [exists] = await conn.query(
+      `
+      SELECT 1
+      FROM private_events
+      WHERE band_id = ?
+        AND event_datetime = ?
+        AND status = 'available'
+        AND event_type = 'availability'
+      `,
+      [band_id, date]
+    );
 
-  if (exists.rowCount > 0) {
-    throw new Error("Availability already exists for this date");
+    if (exists.length > 0) {
+      throw new Error("Availability already exists for this date");
+    }
+
+    await conn.query(
+      `
+      INSERT INTO private_events (band_id, status, event_type, event_datetime)
+      VALUES (?, 'available', 'availability', ?)
+      `,
+      [band_id, date]
+    );
+  } finally {
+    if (conn) await conn.end();
   }
-
-  await pool.query(
-    `
-    INSERT INTO private_events (
-      band_id,
-      status,
-      event_type,
-      event_datetime
-    )
-    VALUES ($1, 'available', 'band_availability', $2)
-    `,
-    [band_id, date]
-  );
 }
 
 async function removeBandAvailability(band_name, date){
   const band_id = await getBandIdByName(band_name);
 
-  const result = await pool.query(
+  const result = await conn.query(
     `
     DELETE FROM private_events
     WHERE band_id = $1
@@ -299,7 +300,7 @@ async function getBandAvailability(band_name) {
 }
 
 async function checkIfBandAvailableAtDate(band_id, date) {
-  const result = await pool.query(
+  const result = await conn.query(
     `
       SELECT * FROM private_events 
       WHERE band_id = $1
@@ -324,10 +325,10 @@ async function requestBandForEvent(user_id, band_name, date, event_type, event_d
   // check if the private event of that date and band_id has status -> available and event_type availability
   // if yes post to it the new data
   // else throw error and fuck off.
-  const valid = checkIfBandAvailableAtDate(band_Id, date);
+  const valid = await checkIfBandAvailableAtDate(band_Id, date);
   
   if(valid){
-    createPrivateEvent(user_id, band_Id, date, event_type, event_description, event_city, event_address);
+    await createPrivateEvent(user_id, band_Id, date, event_type, event_description, event_city, event_address);
   }
 
   return valid;
@@ -346,6 +347,7 @@ async function createPrivateEvent(
 
   try {
     conn = await getConnection();
+    await conn.beginTransaction();
 
     // find the private event
     const [events] = await conn.query(
