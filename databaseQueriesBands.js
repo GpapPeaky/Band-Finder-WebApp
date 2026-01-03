@@ -269,7 +269,7 @@ async function removeBandAvailability(band_name, date){
   }
 }
 
-export async function getBandAvailability(band_name) {
+async function getBandAvailability(band_name) {
   let conn;
 
   try {
