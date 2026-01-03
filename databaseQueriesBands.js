@@ -220,9 +220,9 @@ async function getBandsPerCity() {
         
       `
     )
+  } catch(err) {
+
   }
-
-
 }
 
 module.exports = { getAllBands, getBandByCredentials, updateBand,

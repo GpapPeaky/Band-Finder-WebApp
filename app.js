@@ -859,7 +859,7 @@ app.get("/bands/pub-events/:event_type", async (req, res) => {
 });
 
 // Get bands based on public event price
-app.get("/bands/pub-events/:price", (req, res) => {
+app.get("/bands/pub-events/:price", async (req, res) => {
   console.log("Event price:", req.params.price);
   console.log("Query params:", req.query);
 
@@ -1045,7 +1045,7 @@ app.post("/admin/details", async (req, res) => {
 
 // Admin gets number of bands per city
 // {n-bands_at_city, city }
-app.get("admin/bandsPerCity", (req, res) => {
+app.get("admin/bandsPerCity", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const bandsPerCity = await getBandsPerCity();
@@ -1070,7 +1070,7 @@ app.get("admin/bandsPerCity", (req, res) => {
 });
 
 // Admin gets the number of events
-app.get("admin/numOfEvents/:type", (req, res) => {
+app.get("admin/numOfEvents/:type", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const eventType = req.params.type;
@@ -1091,7 +1091,7 @@ app.get("admin/numOfEvents/:type", (req, res) => {
 });
 
 // Admin gets the number of users
-app.get("admin/numOfUsers/:type", (req, res) => {
+app.get("admin/numOfUsers/:type", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const userType = req.params.type;
@@ -1113,7 +1113,7 @@ app.get("admin/numOfUsers/:type", (req, res) => {
 });
 
 // User sends a message to a band, through input fields
-app.put("sendMessage", (req, res) => {
+app.put("sendMessage", async (req, res) => {
     try {
       const data = req.body;
 
@@ -1151,7 +1151,7 @@ app.put("sendMessage", (req, res) => {
 });
 
 // Band can creates a public event
-app.put("createEvent", (req, res) => {
+app.put("createEvent", async (req, res) => {
     console.log("=== CREATE PUBLIC EVENT ENDPOINT HIT ===");
 
     try {
@@ -1171,7 +1171,7 @@ app.put("createEvent", (req, res) => {
 });
 
 // User requests a band for an event
-app.put("requestBand", (req, res) => {
+app.put("requestBand", async (req, res) => {
     console.log("=== REQUEST BAND ENDPOINT HIT ===");
 
     try {
@@ -1193,7 +1193,7 @@ app.put("requestBand", (req, res) => {
 });
 
 // Get events based on a special filter
-app.get("getEventsBasedOn/:filter", (req, res) => {
+app.get("getEventsBasedOn/:filter", async (req, res) => {
     console.log("=== GET EVENTS BASED ON FILTER ENDPOINT HIT ===");
 
     try {
@@ -1215,7 +1215,7 @@ app.get("getEventsBasedOn/:filter", (req, res) => {
 });
 
 // Band updates user requests
-app.post("updateRequest/", (req, res) => {
+app.post("updateRequest/", async (req, res) => {
     console.log("=== UPDATE REQUEST ENDPOINT HIT ===");
 
     try {
@@ -1235,7 +1235,7 @@ app.post("updateRequest/", (req, res) => {
 });
 
 // Update band fields, all of em
-app.post("updateBand/", (req, res) => {
+app.post("updateBand/", async (req, res) => {
     console.log("=== UPDATE BAND ENDPOINT HIT ===");
 
     try {
@@ -1249,7 +1249,7 @@ app.post("updateBand/", (req, res) => {
 });
 
 // See band availability
-app.get("seeAvailability/", (req, res) => {
+app.get("seeAvailability/", async (req, res) => {
     console.log("=== SEE BAND AVAILABILITY ENDPOINT HIT ===");
 
     try { 
