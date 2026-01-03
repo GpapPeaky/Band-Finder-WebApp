@@ -894,10 +894,10 @@ app.get("/bands/pub-events/:price", async (req, res) => {
 
 // Update band schedule, add a date that the band is available
 // otherwise it will be thought as unavailable
-app.put("/bands/addAvailability", async (req, res) => {
+app.put("/bands/setAvailability", async (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
 
-    if(!req.body.band_name || !req.body.date || !req.body.senderType){
+    if(!req.body.band_name || !req.body.date){
         return res.status(400).json({
             success: false,
             error: "Missing required fields",
@@ -907,17 +907,9 @@ app.put("/bands/addAvailability", async (req, res) => {
     try {
         const band_name = req.body.band_name;
         const date = req.body.date;
-        const senderType = req.body.senderType;
         
-        if(senderType !== "band"){
-            return res.status(403).json({
-                success: false,
-                error: "Forbidden: Only bands can update their availability",
-            });
-        }
-
         // Add availability to database
-        await addBandAvailability(band_name, date);
+        await setBandAvailability(band_name, date);
 
         return res.status(200).json({
             success: true,
@@ -936,7 +928,7 @@ app.put("/bands/addAvailability", async (req, res) => {
 app.delete("/bands/removeAvailability", async (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
 
-    if(!req.body.band_name || !req.body.date || !req.body.senderType){
+    if(!req.body.band_name || !req.body.date){
         return res.status(400).json({
             success: false,
             error: "Missing required fields",
@@ -946,14 +938,6 @@ app.delete("/bands/removeAvailability", async (req, res) => {
     try {
         const band_name = req.body.band_name;
         const date = req.body.date;
-        const senderType = req.body.senderType;
-        
-        if(senderType !== "band"){
-            return res.status(403).json({
-                success: false,
-                error: "Forbidden: Only bands can update their availability",
-            });
-        }
 
         // Remove availability from database
         await removeBandAvailability(band_name, date);

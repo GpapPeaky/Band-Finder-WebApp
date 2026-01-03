@@ -217,7 +217,7 @@ async function getBandsByPublicEventPrice(price) {
 // Create a new available slot, reject a pending private event request from user
 // Private events created from here have a status set to available, for users to 
 // request the band at that specific date, else they can't 
-async function addBandAvailability(band_name, date) {
+async function setBandAvailability(band_name, date) {
   const band_id = await getBandIdByName(band_name);
 
   // Prevent duplicate availability for same datetime
@@ -266,6 +266,35 @@ async function removeBandAvailability(band_name, date){
 
   if (result.rowCount === 0) {
     throw new Error("No availability found for this date");
+  }
+}
+
+export async function getBandAvailability(band_name) {
+  let conn;
+
+  try {
+    conn = await getConnection();
+    const band_id = await getBandIdByName(band_name);
+
+    const [rows] = await conn.query(
+      `
+      SELECT 
+        private_event_id,
+        event_datetime
+      FROM private_events
+      WHERE band_id = ?
+        AND status = 'available'
+        AND event_type = 'availability'
+      ORDER BY event_datetime ASC
+      `,
+      [band_id]
+    );
+
+    return rows; // array of available slots
+  } catch (err) {
+    throw new Error("Failed to get band availability: " + err.message);
+  } finally {
+    if (conn) await conn.end();
   }
 }
 
@@ -387,7 +416,7 @@ async function getBandsPerCity() {
 }
 
 module.exports = { getAllBands, getBandByCredentials, updateBand,
-  deleteBand ,bandExists, getBandsAtDate, addBandAvailability,
+  deleteBand ,bandExists, getBandsAtDate, setBandAvailability,
   removeBandAvailability, getBandsPerCity, requestBandForEvent,
-  getBandsByPublicEventType, getBandsByPublicEventPrice,
+  getBandsByPublicEventType, getBandsByPublicEventPrice, getBandAvailability
  };
