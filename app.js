@@ -1155,7 +1155,7 @@ app.put("createEvent", async (req, res) => {
 });
 
 // User requests a band for an event
-app.put("requestBand", async (req, res) => {
+app.put("requestBand/", async (req, res) => {
     console.log("=== REQUEST BAND ENDPOINT HIT ===");
 
     try {

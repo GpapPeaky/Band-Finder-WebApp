@@ -200,6 +200,8 @@ async function getBandsByPublicEventPrice(price) {
 }
 
 // Create a new available slot, reject a pending private event request from user
+// Private events created from here have a status set to available, for users to 
+// request the band at that specific date, else they can't 
 async function addBandAvailability(band_name, date) {
   // TODO.
 }
