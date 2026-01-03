@@ -278,7 +278,7 @@ async function checkIfBandAvailableAtDate(band_id, date) {
         AND status = 'available'
         AND event_type = 'availability'
     `,
-    [validAvailability]
+    [band_id, date]
   );
 
   if(result.rowCount === 0) {
@@ -295,10 +295,77 @@ async function requestBandForEvent(user_id, band_name, date, event_type, event_d
   // check if the private event of that date and band_id has status -> available and event_type availability
   // if yes post to it the new data
   // else throw error and fuck off.
-  const valid = checkIfBandAvailableAtDate(band_id, date);
+  const valid = checkIfBandAvailableAtDate(band_Id, date);
   
   if(valid){
-    createPrivateEvent(user_id, band_name, date, event_type, event_description, event_city, event_address);
+    createPrivateEvent(user_id, band_Id, date, event_type, event_description, event_city, event_address);
+  }
+
+  return valid;
+}
+
+async function createPrivateEvent(
+  user_id,
+  band_Id,
+  date,
+  event_type,
+  event_description,
+  event_city,
+  event_address
+) {
+  let conn;
+
+  try {
+    conn = await getConnection();
+
+    // find the private event
+    const [events] = await conn.query(
+      `
+      SELECT private_event_id
+      FROM private_events
+      WHERE band_id = ?
+        AND event_datetime = ?
+        AND status = 'available'
+        AND event_type = 'availability'
+      `,
+      [band_Id, date]
+    );
+
+    if (events.length === 0) {
+      throw new Error("Band is not available on this date");
+    }
+
+    const private_event_id = events[0].private_event_id;
+
+    // Update availability
+    await conn.query(
+      `
+      UPDATE private_events
+      SET
+        user_id = ?,
+        event_type = ?,
+        event_description = ?,
+        event_city = ?,
+        event_address = ?,
+        status = 'pending',
+        band_decision = 'pending'
+      WHERE private_event_id = ?
+      `,
+      [
+        user_id,
+        event_type,
+        event_description,
+        event_city,
+        event_address,
+        private_event_id
+      ]
+    );
+
+    return private_event_id;
+  } catch (err) {
+    throw new Error("Failed to create private event: " + err.message);
+  } finally {
+    if (conn) await conn.end();
   }
 }
 

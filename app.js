@@ -34,6 +34,7 @@ const {
   getUserByCredentials,
   updateUser,
   deleteUser,
+  getUserIdByName,
 } = require("./databaseQueriesUsers");
 const {
   getAllBands,
@@ -43,6 +44,7 @@ const {
   bandExists,
 } = require("./databaseQueriesBands");
 const { send } = require("process");
+const { error } = require("console");
 
 const app = express();
 const PORT = 3000;
@@ -1164,18 +1166,29 @@ app.put("/requestBand", async (req, res) => {
         const user_name = req.body.username;
         const password = req.body.password;
 
-      if(checkIfLoggedInAsUser(user_name, password)) { // TODO
+        
+        const users = getUserByCredentials(user_name, password);
+      if(users.length > 0) {
         const user_id = await getUserIdByName(user_name);
         
-        const request = await requestBandForEvent(user_id, band_name, date); // TODO
-      } else {
-        throw new Error("Not logged in as user");
-      }
- 
-        return res.status(200).json({
+        const request = await requestBandForEvent(user_id, band_name, date);
+
+        if(request) {
+          return res.status(200).json({
             success: true,
             request: request,
+          });
+        } else {
+          console.error("Couldn't create private event");
+        }
+      } else {
+        console.error("Not logged in as user");
+
+        return res.status(401).json({
+          success: false,
+          error: "Unauthorized request"
         });
+      }
     } catch (err) {
         console.error("Error requesting band for event:", err);
         return res.status(500).json({
