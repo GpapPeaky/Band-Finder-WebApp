@@ -1157,11 +1157,20 @@ app.put("/createEvent", async (req, res) => {
 // User requests a band for an event
 app.put("/requestBand", async (req, res) => {
     console.log("=== REQUEST BAND ENDPOINT HIT ===");
-
+    
     try {
         const band_name = req.body.band_name;
         const date = req.body.date;
-        const request = await requestBandForEvent(band_name, date); // TODO
+        const user_name = req.body.username;
+        const password = req.body.password;
+
+      if(checkIfLoggedInAsUser(user_name, password)) { // TODO
+        const user_id = await getUserIdByName(user_name);
+        
+        const request = await requestBandForEvent(user_id, band_name, date); // TODO
+      } else {
+        throw new Error("Not logged in as user");
+      }
  
         return res.status(200).json({
             success: true,
