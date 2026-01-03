@@ -19,6 +19,19 @@ async function getAllBands() {
   }
 }
 
+async function getBandIdByName() {
+  const result = await pool.query(
+    "SELECT band_id FROM bands WHERE band_name = $1",
+    [band_name]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error("Band not found");
+  }
+
+  return result.rows[0].band_id;
+}
+
 async function getBandByCredentials(username, password) {
   let conn;
   try {
@@ -202,13 +215,58 @@ async function getBandsByPublicEventPrice(price) {
 // Create a new available slot, reject a pending private event request from user
 // Private events created from here have a status set to available, for users to 
 // request the band at that specific date, else they can't 
-async function addBandAvailability(band_name, date) {
-  // TODO.
+export async function addBandAvailability(band_name, date) {
+  const band_id = await getBandIdByName(band_name);
+
+  // Prevent duplicate availability for same datetime
+  const exists = await pool.query(
+    `
+    SELECT 1
+    FROM private_events
+    WHERE band_id = $1
+      AND event_datetime = $2
+      AND status = 'available'
+    `,
+    [band_id, date]
+  );
+
+  if (exists.rowCount > 0) {
+    throw new Error("Availability already exists for this date");
+  }
+
+  await pool.query(
+    `
+    INSERT INTO private_events (
+      band_id,
+      status,
+      event_type,
+      event_datetime
+    )
+    VALUES ($1, 'available', 'band_availability', $2)
+    `,
+    [band_id, date]
+  );
 }
 
-async function removeBandAvailability(band_name, date) {
-  // TODO.
+export async function removeBandAvailability(band_name, date){
+  const band_id = await getBandIdByName(band_name);
+
+  const result = await pool.query(
+    `
+    DELETE FROM private_events
+    WHERE band_id = $1
+      AND event_datetime = $2
+      AND status = 'available'
+      AND event_type = 'availability'
+    `,
+    [band_id, date]
+  );
+
+  if (result.rowCount === 0) {
+    throw new Error("No availability found for this date");
+  }
 }
+
 
 async function getBandsPerCity() {
   let conn;
