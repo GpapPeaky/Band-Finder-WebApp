@@ -1,5 +1,6 @@
-TESTED          WORKING             ARE NOT WORKING
-
+TESTED          WORKING             IS NOT WORKING
+/sendMessage                        sendMessageToBand is not defined propablly more missing
+/requestBand                        Δεν παιρνει απο το JSON user credentials ωστε συγκεκριμενος user να κανει request also προφανως δεν δουλευει
 
 
 todo:
