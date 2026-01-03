@@ -151,21 +151,12 @@ async function dropDatabase() {
 }
 
 // Check via cookie if the credentials are that of the admin
-// username: 
-// password:
+// username: ADMIN_SNIK_2004
+// password: admin_feet_lover
 async function checkIfLoggedInAsAdmin(req) {
-  // Use cookie.
-  // TODO.
+  if (!req.cookies) return false;
 
-  return false;
+  return req.cookies.is_admin === 'true';
 }
 
-// Get admin info ig.
-async function getAdminDetails() {
-  // Use cookie.
-  // TODO.
-
-  // return details;
-}
-
-module.exports = { initDatabase, dropDatabase, getConnection, checkIfLoggedInAsAdmin, getAdminDetails };
+module.exports = { initDatabase, dropDatabase, getConnection, checkIfLoggedInAsAdmin, };

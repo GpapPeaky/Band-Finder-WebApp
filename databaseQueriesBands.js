@@ -208,7 +208,24 @@ async function removeBandAvailability(band_name, date) {
   // TODO.
 }
 
+async function getBandsPerCity() {
+  let conn;
+
+  try {
+    conn = await getConnection();
+
+    // TODO.
+    const [bandCount_City_Pairs] = conn.query(
+      `
+        
+      `
+    )
+  }
+
+
+}
+
 module.exports = { getAllBands, getBandByCredentials, updateBand,
   deleteBand ,bandExists, getBandsAtDate, addBandAvailability,
-  removeBandAvailability,
+  removeBandAvailability, getBandsPerCity,
   getBandsByPublicEventType, getBandsByPublicEventPrice };

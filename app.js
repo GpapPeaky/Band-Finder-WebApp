@@ -1014,39 +1014,42 @@ app.delete("admin/removeUser/:user_name", async (req, res) => {
 
 });
 
-// Get admin details
-app.get("admin/details", async (req, res) => {
-    if (checkIfLoggedInAsAdmin(req)) {
-      try {
-          const adminDetails = await getAdminDetails();
-          return res.status(200).json({
-              success: true,
-              adminDetails: adminDetails,
-          });
-      } catch(err){
-          console.error("Error getting admin details:", err);
-          return res.status(500).json({
-              success: false,
-              error: "Server error: " + err.message,
-          });
-      }
-    } else {
-      return res.status(403).json({
-        success: false,
-        error: "Forbidden: Admin access required",
-      });
-    }
+// admin username/pass and stuff.
+const ADMIN_USER = "ADMIN_SNIK_2004";
+const ADMIN_PASS = "admin_feet_lover";
 
+// Get admin details
+app.post("/admin/details", async (req, res) => {
+  const { username, password } = req.body;
+
+  // validate credentials
+  const isAdmin =
+    username === ADMIN_USER && password === ADMIN_PASS;
+
+  if (!isAdmin) {
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
+
+  // set admin cookie
+  res.cookie("is_admin", "true", {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: false // true in production with HTTPS
+  });
+
+  return res.json({ success: true });
 });
 
 // FINISHED
 // CHECK ADMIN COOKIE, RETHINK AVAILAVILITY ROUTES.
 
 // Admin gets number of bands per city
+// {n-bands_at_city, city }
 app.get("admin/bandsPerCity", (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const bandsPerCity = await getBandsPerCity();
+
           return res.status(200).json({
               success: true,
               bandsPerCity: bandsPerCity,
