@@ -1,3 +1,7 @@
+TESTED          WORKING             ARE NOT WORKING
+
+
+
 todo:
     user psaxnei events me ola ta attributes tou band kaie event pou kanei to event 
     make guest users on login

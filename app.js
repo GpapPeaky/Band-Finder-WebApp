@@ -892,7 +892,7 @@ app.get("/bands/pub-events/:price", async (req, res) => {
 
 // Update band schedule, add a date that the band is available
 // otherwise it will be thought as unavailable
-app.put("bands/addAvailability", async (req, res) => {
+app.put("/bands/addAvailability", async (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
 
     if(!req.body.band_name || !req.body.date || !req.body.senderType){
@@ -931,7 +931,7 @@ app.put("bands/addAvailability", async (req, res) => {
 });
 
 // Update band schedule, remove a date that the band is available
-app.delete("bands/removeAvailability", async (req, res) => {
+app.delete("/bands/removeAvailability", async (req, res) => {
     console.log("=== UPDATE BAND SCHEDULE ENDPOINT HIT ===");
 
     if(!req.body.band_name || !req.body.date || !req.body.senderType){
@@ -970,7 +970,7 @@ app.delete("bands/removeAvailability", async (req, res) => {
 });
 
 // remove a user with a specific name if he exists
-app.delete("admin/removeUser/:user_name", async (req, res) => {
+app.delete("/admin/removeUser/:user_name", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const user_name = req.params.user_name;
@@ -1029,7 +1029,7 @@ app.post("/admin/details", async (req, res) => {
 
 // Admin gets number of bands per city
 // {n-bands_at_city, city }
-app.get("admin/bandsPerCity", async (req, res) => {
+app.get("/admin/bandsPerCity", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const bandsPerCity = await getBandsPerCity();
@@ -1054,7 +1054,7 @@ app.get("admin/bandsPerCity", async (req, res) => {
 });
 
 // Admin gets the number of events
-app.get("admin/numOfEvents/:type", async (req, res) => {
+app.get("/admin/numOfEvents/:type", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const eventType = req.params.type;
@@ -1075,7 +1075,7 @@ app.get("admin/numOfEvents/:type", async (req, res) => {
 });
 
 // Admin gets the number of users
-app.get("admin/numOfUsers/:type", async (req, res) => {
+app.get("/admin/numOfUsers/:type", async (req, res) => {
     if (checkIfLoggedInAsAdmin(req)) {
       try {
           const userType = req.params.type;
@@ -1097,7 +1097,7 @@ app.get("admin/numOfUsers/:type", async (req, res) => {
 });
 
 // User sends a message to a band, through input fields
-app.put("sendMessage", async (req, res) => {
+app.put("/sendMessage", async (req, res) => {
     try {
       const data = req.body;
 
@@ -1135,7 +1135,7 @@ app.put("sendMessage", async (req, res) => {
 });
 
 // Band can creates a public event
-app.put("createEvent", async (req, res) => {
+app.put("/createEvent", async (req, res) => {
     console.log("=== CREATE PUBLIC EVENT ENDPOINT HIT ===");
 
     try {
@@ -1155,7 +1155,7 @@ app.put("createEvent", async (req, res) => {
 });
 
 // User requests a band for an event
-app.put("requestBand/", async (req, res) => {
+app.put("/requestBand", async (req, res) => {
     console.log("=== REQUEST BAND ENDPOINT HIT ===");
 
     try {
@@ -1177,7 +1177,7 @@ app.put("requestBand/", async (req, res) => {
 });
 
 // Get events based on a special filter
-app.get("getEventsBasedOn/:filter", async (req, res) => {
+app.get("/getEventsBasedOn/:filter", async (req, res) => {
     console.log("=== GET EVENTS BASED ON FILTER ENDPOINT HIT ===");
 
     try {
@@ -1199,7 +1199,7 @@ app.get("getEventsBasedOn/:filter", async (req, res) => {
 });
 
 // Band updates user requests
-app.post("updateRequest/", async (req, res) => {
+app.post("/updateRequest", async (req, res) => {
     console.log("=== UPDATE REQUEST ENDPOINT HIT ===");
 
     try {
@@ -1219,7 +1219,7 @@ app.post("updateRequest/", async (req, res) => {
 });
 
 // Update band fields, all of em
-app.post("updateBand/", async (req, res) => {
+app.post("/updateBand", async (req, res) => {
     console.log("=== UPDATE BAND ENDPOINT HIT ===");
 
     try {
@@ -1233,7 +1233,7 @@ app.post("updateBand/", async (req, res) => {
 });
 
 // See band availability
-app.get("seeAvailability/", async (req, res) => {
+app.get("/seeAvailability/", async (req, res) => {
     console.log("=== SEE BAND AVAILABILITY ENDPOINT HIT ===");
 
     try { 
