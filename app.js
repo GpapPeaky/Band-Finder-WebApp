@@ -679,20 +679,6 @@ app.get("/reviews/:band_name", async (req, res) => {
     });
   }
 });
-// Global error handler
-app.use((err, req, res, next) => {
-  console.error("=== UNHANDLED ERROR ===");
-  console.error(err);
-  res.status(500).json({
-    success: false,
-    error: "Internal server error: " + err.message,
-    mytype: "none",
-  });
-});
-
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
 
 /// ================================== PEAKY ================================== ///
 
@@ -929,7 +915,6 @@ app.put("bands/addAvailability", async (req, res) => {
         }
 
         // Add availability to database
-        // FIXME: rethink ts.
         await addBandAvailability(band_name, date);
 
         return res.status(200).json({
@@ -969,7 +954,6 @@ app.delete("bands/removeAvailability", async (req, res) => {
         }
 
         // Remove availability from database
-        // FIXME: Rethink ts.
         await removeBandAvailability(band_name, date);
 
         return res.status(200).json({
@@ -1268,4 +1252,19 @@ app.get("seeAvailability/", async (req, res) => {
             error: "Server error: " + err.message,
         });
     }
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("=== UNHANDLED ERROR ===");
+  console.error(err);
+  res.status(500).json({
+    success: false,
+    error: "Internal server error: " + err.message,
+    mytype: "none",
+  });
+});
+
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });
