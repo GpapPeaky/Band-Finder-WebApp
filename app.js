@@ -1110,9 +1110,9 @@ app.put("/sendMessage", async (req, res) => {
       }
 
       if (data.senderType === "user") {
-        sendMessageToBand(data.sender, data.band_name, data.message, data.event_id);
+        sendMessageToBand(data.sender, data.band_name, data.message, data.event_id);  // TODO
       } else if (data.senderType === "band") {
-        sendMessageToUser(data.sender, data.band_name, data.message, data.event_id);
+        sendMessageToUser(data.sender, data.band_name, data.message, data.event_id);  // TODO
       } else {
         return res.status(400).json({
           success: false,
@@ -1161,7 +1161,7 @@ app.put("/requestBand", async (req, res) => {
     try {
         const band_name = req.body.band_name;
         const date = req.body.date;
-        const request = await requestBandForEvent(band_name, date);
+        const request = await requestBandForEvent(band_name, date); // TODO
  
         return res.status(200).json({
             success: true,
