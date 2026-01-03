@@ -1,7 +1,13 @@
 TESTED          WORKING             IS NOT WORKING
 /sendMessage                        sendMessageToBand is not defined propablly more missing
 /requestBand                        Δεν παιρνει απο το JSON user credentials ωστε συγκεκριμενος user να κανει request also προφανως δεν δουλευει
-
+/seeAvailability            
+/getEventBasedOn
+/createEvent                        basically 0 code exei ena function to opoio den einai kan defined
+/setAvailability                    not even decleration 0 code.
+/updateBand                         only function decleration 0 code
+/updateRequest                      
+/removeUser                         
 
 todo:
     user psaxnei events me ola ta attributes tou band kaie event pou kanei to event 
