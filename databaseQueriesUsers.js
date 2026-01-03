@@ -177,4 +177,4 @@ async function deleteUser(username) {
   }
 }
 
-module.exports = { getAllUsers, getUserByCredentials, updateUser, deleteUser, getUserIdByName, checkIfLoggedInAsUser };
+module.exports = { getAllUsers, getUserByCredentials, updateUser, deleteUser, getUserIdByName };
