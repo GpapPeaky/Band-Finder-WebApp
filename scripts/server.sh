@@ -1,0 +1,3 @@
+clear
+
+node ./server.js
