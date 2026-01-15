@@ -2,6 +2,7 @@ const express = require("express");
 const router = express();
 
 const { phoneExistsSimpleForother } = require("../databaseQueriesBoth");
+const { getBandIdByName, getBandAvailability } = require("../databaseQueriesBands");
 const { insertReview, insertPrivateEvent } = require("../databaseInsert");
 const { getUserByCredentials, updateUser, getUserIdByName } = require("../databaseQueriesUsers");
 
@@ -194,11 +195,14 @@ router.get(
         dates: [],
       });
     }
+    
+    // Availability is marked as private events with status "available"
+    const availability = await getBandAvailability(req.body.band_name);
 
-    // TODO:
     return res.json({
       success: true,
-      message: "Availability fetched successfully",
+      message: "Band " + req.body.band_name + " availability retrieved",
+      dates: availability,
     });
   }
 );

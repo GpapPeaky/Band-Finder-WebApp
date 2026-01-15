@@ -321,7 +321,7 @@ async function insertPrivateEvent(event) {
       event.event_lon,
     ]);
 
-    return "Private event inserted successfully.";
+    return "Event request by user " + event.user_id + " for band " + event.band_id + " inserted successfully.";
   } catch (err) {
     console.log(err.message);
     throw new Error("DB error: " + err.message);
