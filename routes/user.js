@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 const express = require("express");
 const router = express();
 
@@ -288,3 +289,15 @@ router.post(
 );
 
 module.exports = router;
+=======
+// routes/user.js
+const express = require("express");
+const router = express.Router();
+
+// routes here
+router.get("/", (req, res) => {
+  res.send("USER ROUTE");
+});
+
+module.exports = router;
+>>>>>>> 537f01e9e6b0074f7b757e3619ad2e66fff977d0

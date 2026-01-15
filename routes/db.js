@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
+<<<<<<< HEAD
 const { initDatabase, dropDatabase } = require("../database");
 const {
   insertUser,
@@ -60,3 +61,6 @@ router.get("/db/dropdb", async (req, res) => {
 });
 
 module.exports = router;
+=======
+module.exports = router;
+>>>>>>> 537f01e9e6b0074f7b757e3619ad2e66fff977d0
