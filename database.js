@@ -126,6 +126,12 @@ CREATE TABLE private_events (
     ON UPDATE CASCADE
 )
 `;
+    const createAdminsTableQuery = `
+    CREATE TABLE admins (
+      admin_username VARCHAR(30) PRIMARY KEY,
+      admin_password VARCHAR(32) NOT NULL
+    )
+    `;
 
     await conn.query(createUsersTableQuery);
     await conn.query(createBandsTableQuery);
@@ -133,6 +139,7 @@ CREATE TABLE private_events (
     await conn.query(createPublicEventsTableQuery);
     await conn.query(createReviewsTableQuery);
     await conn.query(createMessagesTableQuery);
+    await conn.query(createAdminsTableQuery);
 
     return `Database HY359_2025 initialized successfully (if it does not exist).`;
   } catch (err) {
@@ -150,13 +157,4 @@ async function dropDatabase() {
   }
 }
 
-// Check via cookie if the credentials are that of the admin
-// username: ADMIN_SNIK_2004
-// password: admin_feet_lover
-async function checkIfLoggedInAsAdmin(req) {
-  if (!req.cookies) return false;
-
-  return req.cookies.is_admin === 'true';
-}
-
-module.exports = { initDatabase, dropDatabase, getConnection, checkIfLoggedInAsAdmin, };
+module.exports = { initDatabase, dropDatabase, getConnection };

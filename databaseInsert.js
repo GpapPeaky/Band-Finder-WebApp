@@ -85,7 +85,25 @@ async function insertBand(band) {
     throw new Error("DB error: " + err.message);
   }
 }
+async function insertAdmin(admin) {
+  try {
+    const conn = await getConnection();
+    const insertQuery = `
+      INSERT INTO admins (
+        admin_username, admin_password
+      ) VALUES (?, ?)
+    `;
+    await conn.execute(insertQuery, [
+      admin.admin_username,
+      admin.admin_password
+    ]);
 
+    return "Admin inserted successfully.";
+  } catch (err) {
+    console.log(err.message);
+    throw new Error("DB error: " + err.message);
+  }
+}
 async function insertReview(review) {
   try {
     const conn = await getConnection();
@@ -313,6 +331,7 @@ async function insertPrivateEvent(event) {
 module.exports = {
   insertUser,
   insertBand,
+  insertAdmin,
   insertReview,
   insertMessage,
   insertPublicEvent,

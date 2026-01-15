@@ -1,13 +1,15 @@
 TESTED          WORKING             IS NOT WORKING
 /sendMessage                        sendMessageToBand is not defined propablly more missing
 /requestBand                        Δεν παιρνει απο το JSON user credentials ωστε συγκεκριμενος user να κανει request also προφανως δεν δουλευει
-/seeAvailability            
-/getEventBasedOn
+/seeAvailability                    "Server error: getBandAvailability is not defined"
+/getEventBasedOn                    "Server error: getEventsBasedOnFilter is not defined"
 /createEvent                        basically 0 code exei ena function to opoio den einai kan defined
-/setAvailability                    not even decleration 0 code.
+/setAvailability                    "Server error: addBandAvailability is not defined"
 /updateBand                         only function decleration 0 code
-/updateRequest                      
-/removeUser                         
+/updateRequest                      "Server error: updateRequest is not defined"
+/removeUser                         "Internal server error: checkIfLoggedInAsAdmin is not defined"
+/admin/details                      Douluei alla statika de paei sth bash
+/bandsPerCity                       "Internal server error: checkIfLoggedInAsAdmin is not defined"
 
 todo:
     user psaxnei events me ola ta attributes tou band kaie event pou kanei to event 

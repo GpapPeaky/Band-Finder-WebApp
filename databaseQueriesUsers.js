@@ -128,28 +128,6 @@ async function updateUser(
     }
   }
 }
-/*
-async function updateUser(username, newFirstname) {
-  try {
-    const conn = await getConnection();
-
-    const updateQuery = `
-      UPDATE users
-      SET firstname = ?
-      WHERE username = ?
-    `;
-
-    const [result] = await conn.execute(updateQuery, [newFirstname, username]);
-
-    if (result.affectedRows === 0) {
-      return 'No user found with that username.';
-    }
-
-    return 'Firstname updated successfully.';
-  } catch (err) {
-    throw new Error('DB error: ' + err.message);
-  }
-}*/
 
 async function deleteUser(username) {
   let conn;
