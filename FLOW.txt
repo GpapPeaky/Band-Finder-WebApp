@@ -1,0 +1,97 @@
+GUEST:
+    indexGuest.html:
+        Page split in two "modes" 2 top buttons for
+        switching between them
+
+        Mode 1 Reviews:
+            Search bar for reviews from band name
+            if empty show all reviews from all bands
+            if band name not found, show nothing
+
+            CANNOT leave reviews
+
+        Mode 2 Public events:
+            SubMode 1: // Public events
+                Search bar for public events from band name
+                if empty show all public events from all bands
+                if band name not found show nothing
+    
+                There will also be a map, with lat/lon pinned to 
+                show the location of all public events
+    
+                and on a board/table
+                which can be sorted by filters
+            SubMode 2: // Bands
+                Search bar for bands from band name
+                if empty show all 
+                if band name not found show nothing
+
+                We can use filters here
+
+ADMIN:
+    indexAdmin.html:
+        One page with all the required stuff for quering.
+        
+        Use pie charts for general info and stats
+
+USER:
+    indexUser.html:
+        Page split in 4 modes:
+            MODE 1 Change credentials:
+                User will be allowed to change his credentials
+
+            MODE 2 Private event requests:
+                SubMode 1: // Requests
+                    User will provide info to a band (via name)
+                    to request a private event.
+
+                SubMode 2: // Query availabilities (type of private events)
+                    He can also query for band availabilities in this page
+            
+            MODE 3 Private event messaging:
+                User can only see private events that where requested
+                by them 
+                on the left there will be the private events that the user
+                requested, clicking in it, will show on the right the 
+                message board between the user and the band that the request
+                was given to.
+            
+            MODE 4 Public events:
+                SubMode 1: // Public events
+                    Search bar for public events from band name
+                    if empty show all public events from all bands
+                    if band name not found show nothing
+    
+                    User can check all public events, in both the map
+                    just like the guest, and on a board/table
+                    which can be sorted by filters
+
+                SubMode 2: // Bands
+                    Search bar for bands from band name
+                    if empty show all 
+                    if band name not found show nothing
+    
+                    We can use filters here
+
+BAND:
+    indexBand.html:
+
+        The band page will have 4 modes:
+
+        MODE 1 Credentials:
+            The band can change its credentials, just like the user.
+
+        MODE 2 Private/Public events and availabilities:
+            The band can organise their private/public events:
+
+            -Accept/decline requests from users
+            -Create public events
+            -Set availabilities for users to query for other requests
+
+        MODE 3 Messaging:
+            They can answer to user's messages, same UI as the user
+            but instead of band_name to the left, it will have the user's name
+
+        MODE 4 Profile:
+            A page for band info, links etc as well
+            as display for band's public events and reviews.
