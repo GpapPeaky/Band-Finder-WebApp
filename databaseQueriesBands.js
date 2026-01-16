@@ -21,17 +21,24 @@ async function getAllBands() {
   }
 }
 
-async function getBandIdByName() {
-  const result = await conn.query(
-    "SELECT band_id FROM bands WHERE band_name = $1",
-    [band_name]
-  );
+async function getBandIdByName(band_name) {
+  let conn;
+  try {
+    conn = await getConnection();
 
-  if (result.rowCount === 0) {
-    throw new Error("Band not found");
+    const [rows] = await conn.query(
+      "SELECT band_id FROM bands WHERE band_name = ?",
+      [band_name]
+    );
+
+    if (rows.length === 0) {
+      throw new Error("Band not found");
+    }
+
+    return rows[0].band_id;
+  } finally {
+    if (conn) await conn.end();
   }
-
-  return result.rows[0].band_id;
 }
 
 async function getBandByCredentials(username, password) {
@@ -250,25 +257,31 @@ async function setBandAvailability(band_name, date) {
     if (conn) await conn.end();
   }
 }
+async function removeBandAvailability(band_name, date) {
+  let conn;
+  try {
+    conn = await getConnection();
+    const band_id = await getBandIdByName(band_name);
 
-async function removeBandAvailability(band_name, date){
-  const band_id = await getBandIdByName(band_name);
+    const [result] = await conn.query(
+      `
+      DELETE FROM private_events
+      WHERE band_id = ?
+        AND event_datetime = ?
+        AND status = 'available'
+        AND event_type = 'availability'
+      `,
+      [band_id, date]
+    );
 
-  const result = await conn.query(
-    `
-    DELETE FROM private_events
-    WHERE band_id = $1
-      AND event_datetime = $2
-      AND status = 'available'
-      AND event_type = 'availability'
-    `,
-    [band_id, date]
-  );
-
-  if (result.rowCount === 0) {
-    throw new Error("No availability found for this date");
+    if (result.affectedRows === 0) {
+      throw new Error("No availability found for this date");
+    }
+  } finally {
+    if (conn) await conn.end();
   }
 }
+
 
 async function getBandAvailability(band_name) {
   let conn;
@@ -290,7 +303,7 @@ async function getBandAvailability(band_name) {
       [band_id]
     );
 
-    return rows; // array of available slots
+    return rows;
   } catch (err) {
     throw new Error("Failed to get band availability: " + err.message);
   } finally {
@@ -404,38 +417,9 @@ async function getBandsPerCity() {
   }
 }
 
-async function getBandAvailability(band_name) {
-  let conn;
-
-  try {
-    conn = await getConnection();
-    const band_id = await getBandIdByName(band_name);
-
-    const [rows] = await conn.query(
-      `
-      SELECT 
-        private_event_id,
-        event_datetime
-      FROM private_events
-      WHERE band_id = ?
-        AND status = 'available'
-        AND event_type = 'availability'
-      ORDER BY event_datetime ASC
-      `,
-      [band_id]
-    );
-
-    return rows; // array of available slots
-  } catch (err) {
-    throw new Error("Failed to get band availability: " + err.message);
-  } finally {
-    if (conn) await conn.end();
-  }
-}
 
 module.exports = { getAllBands, getBandByCredentials, updateBand,
   getBandIdByName,
-  getBandAvailability,
   deleteBand ,bandExists, getBandsAtDate, setBandAvailability,
   removeBandAvailability, getBandsPerCity, requestBandForEvent,
   getBandsByPublicEventType, getBandsByPublicEventPrice, getBandAvailability

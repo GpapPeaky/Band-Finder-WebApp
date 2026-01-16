@@ -8,6 +8,9 @@ const {
   phoneExistsBand,
   bandnameExistsBand,
   getReviews,
+  getMessageHistory,
+  isPartOfTheEvent,
+  newMessage
 } = require("../databaseQueriesBoth");
 const {
   insertUser,
@@ -80,7 +83,7 @@ async function checkIfAdmin(username, password) {
  * Returns {success: true/false , message, events[]}
  */
 router.get(
-  "/general/getEventsBasedOn/:filter",
+  "/getEventsBasedOn/:filter",
   requireParams(["filter"]),
   requireBody(["usertype", "username", "password"]),
   async (req, res) => {
@@ -103,16 +106,15 @@ router.get(
 
 /**
  * Send message endpoint ( For user and band )
- * Gets a JSON with "sender_type"(user or band) , "username" , "password" , "reciever" , "message" , "event_id"
+ * Gets a JSON with "sender_type"(user or band) , "username" , "password" , "message" , "event_id"
  * Returns {success: true/false , message }
  */
 router.put(
-  "/general/sendMessage",
+  "/sendMessage",
   requireBody([
     "sender_type",
     "username",
     "password",
-    "reciever",
     "message",
     "event_id",
   ]),
@@ -129,10 +131,82 @@ router.put(
         message: "Unauthorized: Invalid credentials",
       });
     }
-    return res.json({
-      success: false,
-      message: "Under construction",
-    });
+
+    let isPart = await isPartOfTheEvent(req.body.event_id, req.body.sender_type, req.body.username);
+    if(!isPart){
+      return res.json({
+        success: false,
+        message: "Unauthorized: You are not part of this event",
+      });
+    }else{
+      console.log("User/Band is part of the event, retrieving messages...");
+    }
+
+    try{
+      const messages = await newMessage(req.body.event_id, req.body.sender_type, req.body.message);
+      return res.json({
+        success: true,
+        message: "Messages sent successfully",
+      });
+    } catch (err) {
+      console.error("Error retrieving messages:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Server error: " + err.message,
+      });
+    }
+  }
+);
+/**
+ * Get message history endpoint ( For user and band )
+ * Gets a JSON with "sender_type"(user or band) , "username" , "password" , "event_id"
+ * Returns {success: true/false , message, messages[] }
+ */
+router.post("/messageHistory",
+  requireBody([
+    "sender_type",
+    "username",
+    "password",
+    "event_id"
+  ]),
+  async (req, res) => {
+    console.log("/messageHistory endpoint hit");
+    const ok =
+      req.body.sender_type === "user"
+        ? await checkIfUser(req.body.username, req.body.password)
+        : await checkIfBand(req.body.username, req.body.password);
+
+    if (!ok) {
+      return res.json({
+        success: false,
+        message: "Unauthorized: Invalid credentials",
+      });
+    }
+
+    let isPart = await isPartOfTheEvent(req.body.event_id, req.body.sender_type, req.body.username);
+    if(!isPart){
+      return res.json({
+        success: false,
+        message: "Unauthorized: You are not part of this event",
+      });
+    }else{
+      console.log("User/Band is part of the event, retrieving messages...");
+    }
+
+    try{
+      const messages = await getMessageHistory(req.body.event_id, req.body.sender_type, req.body.username);
+      return res.json({
+        success: true,
+        message: "Messages retrieved successfully",
+        messages: messages,
+      });
+    } catch (err) {
+      console.error("Error retrieving messages:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Server error: " + err.message,
+      });
+    }
   }
 );
 
@@ -142,7 +216,7 @@ router.put(
  * Returns {success: true/false, band_name, count, reviews[], error?}
  */
 router.get(
-  "/general/reviews/:band_name",
+  "/reviews/:band_name",
   requireParams(["band_name"]),
   async (req, res) => {
     console.log("=== GET REVIEWS ENDPOINT HIT ===");
@@ -210,7 +284,7 @@ router.get(
  * Gets a JSON with user or band data depending on registration type
  * Returns {success: true/false, message, redirect?, mytype}
  */
-router.post("/general/register", async (req, res) => {
+router.post("/register", async (req, res) => {
   console.log("=== REGISTER ENDPOINT HIT ===");
   console.log("Received body:", req.body);
 
