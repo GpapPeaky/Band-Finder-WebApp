@@ -198,6 +198,34 @@ async function bandnameExistsBand(band_name) {
     }
   }
 }
+async function getNumberOfUsersByType(type) {
+  let conn;
+  try {
+    conn = await getConnection();
+    if (!type) {
+      throw new Error("User type is required");
+    } else if (type === "user") {
+      const [usersResult] = await conn.query(
+        "SELECT COUNT(*) AS count FROM users"
+      );
+      return usersResult[0].count;
+    } else if (type === "band") {
+      const [bandsResult] = await conn.query(
+        "SELECT COUNT(*) AS count FROM bands"
+      );
+      return bandsResult[0].count;
+    } else {
+      throw new Error("Invalid user type");
+    }
+  } catch (err) {
+    console.error("Error getting number of users by type:", err);
+    throw err;
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
+  }
+}
 module.exports = {
   usernameExists,
   emailExists,
@@ -206,4 +234,5 @@ module.exports = {
   bandnameExistsBand,
   phoneExistsSimpleForother,
   getReviews,
+  getNumberOfUsersByType
 };

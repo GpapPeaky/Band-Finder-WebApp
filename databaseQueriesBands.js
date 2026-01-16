@@ -399,24 +399,30 @@ async function createPrivateEvent(
     if (conn) await conn.end();
   }
 }
-
 async function getBandsPerCity() {
   let conn;
 
   try {
     conn = await getConnection();
 
-    // TODO.
-    const [bandCount_City_Pairs] = conn.query(
+    const [bandCount_City_Pairs] = await conn.query(
       `
-        
-      `
-    )
+      SELECT band_city, COUNT(*) AS band_count
+      FROM bands
+      GROUP BY band_city
+      ORDER BY band_count DESC
+      `,
+      []
+    );
+    return bandCount_City_Pairs;
   } catch(err) {
-
+    throw new Error("DB error: " + err.message);
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
   }
 }
-
 module.exports = { getAllBands, getBandByCredentials, updateBand,
   deleteBand ,bandExists, getBandsAtDate, setBandAvailability,
   removeBandAvailability, getBandsPerCity, requestBandForEvent,

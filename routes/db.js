@@ -24,7 +24,7 @@ const {
   getAllUsers,
 } = require("../databaseQueriesUsers");
 
-router.get("/db/initdb", async (req, res) => {
+router.get("/initdb", async (req, res) => {
   try {
     const result = await initDatabase();
     res.send(result);
@@ -33,7 +33,7 @@ router.get("/db/initdb", async (req, res) => {
   }
 });
 
-router.get("/db/insertRecords", async (req, res) => {
+router.get("/insertRecords", async (req, res) => {
   try {
     for (const user of users) var result = await insertUser(user);
     for (const band of bands) var result = await insertBand(band);
@@ -50,10 +50,19 @@ router.get("/db/insertRecords", async (req, res) => {
   }
 });
 
-router.get("/db/dropdb", async (req, res) => {
+router.get("/dropdb", async (req, res) => {
   try {
     const message = await dropDatabase();
     res.send(message);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
+router.get("/users", async (req, res) => {
+  try {
+    const users = await getAllUsers();
+    res.json(users);
   } catch (error) {
     res.status(500).send(error.message);
   }
