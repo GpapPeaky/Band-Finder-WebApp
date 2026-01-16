@@ -2,8 +2,9 @@ const express = require("express");
 const router = express();
 
 const { phoneExistsSimpleForother } = require("../databaseQueriesBoth");
-const { insertReview } = require("../databaseInsert");
-const { getUserByCredentials, updateUser } = require("../databaseQueriesUsers");
+const { getBandIdByName, getBandAvailability } = require("../databaseQueriesBands");
+const { insertReview, insertPrivateEvent } = require("../databaseInsert");
+const { getUserByCredentials, updateUser, getUserIdByName } = require("../databaseQueriesUsers");
 
 function requireBody(fields) {
   return (req, res, next) => {
@@ -90,14 +91,15 @@ router.get(
     }
   }
 );
+
 /**
  * User requests a band for a private event
- * Gets a JSON with "username" , "password" (of the user), "band_name" , "date"
+ * Gets a JSON with "username" , "password" (of the user), "band_name" , "date", "event_type", "event_city", "event_address"
  * Returns {success: true/false , message}
  */
 router.put(
   "/requestBand",
-  requireBody(["username", "password", "band_name", "date"]),
+  requireBody(["username", "password", "band_name", "date", "event_type", "event_city", "event_address", "event_description"]),
   async (req, res) => {
     console.log("/user/requestBand endpoint hit");
     if (!(await checkIfUser(req.body.username, req.body.password))) {
@@ -106,9 +108,72 @@ router.put(
         message: "Unauthorized: Invalid credentials",
       });
     }
+
+    // Requests for private events will flow like this:
+    //  request is handled as a private event with status "pending"
+    //  and the band accepts/rejects accordingly
+
+    const band_id = getBandIdByName(req.body.band_name);
+    const user_id = getUserIdByName(req.body.username);
+
+    let price;
+    switch (req.body.event_type) {
+      case "wedding":
+        price = 2000;
+        break;
+      case "baptism":
+        price = 1000;
+        break;
+      case "party":
+        price = 500;
+        break;
+      
+      default:
+        price = 300;
+    }
+
+    // Geocoding
+    const query = `${req.body.event_address}, ${req.body.event_city}`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+      query
+    )}&format=json&addressdetails=1&limit=1`;
+    let lat, lon;
+    try {
+      const response = await fetch(url, {
+        headers: {
+          "User-Agent": "app/1.0 (https://example.com/contact)"
+        }
+      });
+      const data = await response.json();
+      if (data.length > 0) {
+        lat = parseFloat(data[0].lat);
+        lon = parseFloat(data[0].lon);
+      }
+    } catch (err) {
+      console.error("Geocoding error:", err);
+    }
+
+    // Construct object
+    const eventRequest = [
+      band_id,
+      price,
+      "pending", // status
+      "pending", // band_decision
+      user_id,
+      req.body.event_type,
+      req.body.date,
+      req.body.event_description,
+      req.body.event_city,
+      req.body.event_address,
+      lat,
+      lon
+    ]
+
+    const msg = insertPrivateEvent(eventRequest);
+
     return res.json({
-      success: false,
-      message: "Under construction",
+      success: true,
+      message: msg,
     });
   }
 );
@@ -130,12 +195,18 @@ router.get(
         dates: [],
       });
     }
+    
+    // Availability is marked as private events with status "available"
+    const availability = await getBandAvailability(req.body.band_name);
+
     return res.json({
-      success: false,
-      message: "Under construction",
+      success: true,
+      message: "Band " + req.body.band_name + " availability retrieved",
+      dates: availability,
     });
   }
 );
+
 /**
  * Submit a review for a band
  * Gets a JSON with "band_name", "sender", "password", "review", "rating"
@@ -178,6 +249,7 @@ router.post(
     }
   }
 );
+
 /**
  * User updates its details
  * Gets a JSON with all user's attributes
