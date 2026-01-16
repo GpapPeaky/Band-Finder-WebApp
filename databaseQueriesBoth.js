@@ -1,15 +1,15 @@
 const mysql = require("mysql2/promise");
 
-const { getConnection } = require("./dbConfig"); 
+const { getConnection } = require("./dbConfig");
 
 async function getReviews(band_name, ratingFrom = 1, ratingTo = 5) {
   let conn;
   try {
     conn = await getConnection();
-    
+
     let query;
     let params = [];
-    
+
     if (band_name === "all") {
       // Get reviews for all bands
       query = `
@@ -32,10 +32,9 @@ async function getReviews(band_name, ratingFrom = 1, ratingTo = 5) {
       `;
       params = [band_name, ratingFrom, ratingTo];
     }
-    
+
     const [rows] = await conn.execute(query, params);
     return rows;
-    
   } catch (err) {
     console.error("Error getting reviews:", err);
     throw err;
@@ -198,6 +197,113 @@ async function bandnameExistsBand(band_name) {
     }
   }
 }
+async function getNumberOfUsersByType(type) {
+  let conn;
+  try {
+    conn = await getConnection();
+    if (!type) {
+      throw new Error("User type is required");
+    } else if (type === "user") {
+      const [usersResult] = await conn.query(
+        "SELECT COUNT(*) AS count FROM users"
+      );
+      return usersResult[0].count;
+    } else if (type === "band") {
+      const [bandsResult] = await conn.query(
+        "SELECT COUNT(*) AS count FROM bands"
+      );
+      return bandsResult[0].count;
+    } else {
+      throw new Error("Invalid user type");
+    }
+  } catch (err) {
+    console.error("Error getting number of users by type:", err);
+    throw err;
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
+  }
+}
+async function getMessageHistory(private_event_id) {
+  let conn;
+  try {
+    conn = await getConnection();
+
+    const [messages] = await conn.query(
+      "SELECT message, sender,private_event_id FROM messages WHERE private_event_id = ? ORDER BY date_time ASC",
+      [private_event_id]
+    );
+    //send only message and sender back
+    return messages.map((msg) => ({
+      message: msg.message,
+      sender: msg.sender,
+    }));
+  } catch (err) {
+    console.error("Error retrieving messages:", err);
+    throw err;
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
+  }
+}
+
+async function isPartOfTheEvent(private_event_id, sender_type, username) {
+  let conn;
+  if (sender_type !== "user" && sender_type !== "band") {
+    throw new Error("Invalid sender type");
+  }
+
+  try {
+    conn = await getConnection();
+    if (sender_type === "user") {
+      const [events] = await conn.query(
+        `SELECT COUNT(*) AS count
+         FROM private_events WHERE private_event_id = ? AND user_id = (SELECT user_id FROM users WHERE username = ?)`,
+        [private_event_id, username]
+      );
+      console.log(`Events count for user ${username} and event ${private_event_id}: ${events[0].count}`);
+      return events[0].count > 0;
+    } else {
+      const [events2] = await conn.query(
+        `SELECT COUNT(*) AS count
+         FROM private_events WHERE private_event_id = ? AND band_id = (SELECT band_id FROM bands WHERE username = ?)`,
+        [private_event_id, username]
+      );
+
+      console.log(`Events count for band ${username} and event ${private_event_id}: ${events2[0].count}`);
+      return events2[0].count > 0;
+    }
+  } catch (err) {
+    console.error("Error checking event participation:", err);
+    throw err;
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
+  }
+}
+
+// returns number of affected rows
+async function newMessage(private_event_id, sender_type,message) {
+  let conn;
+  try {
+    conn = await getConnection();
+    const [messages] = await conn.query(
+      "INSERT INTO messages (private_event_id, sender,message) VALUES (?, ?, ?)",
+      [private_event_id,sender_type,message]
+    );
+    return messages.affectedRows;
+  } catch (err) {
+    console.error("Error adding new message:", err);
+    throw err;
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
+  }
+}
 module.exports = {
   usernameExists,
   emailExists,
@@ -206,4 +312,8 @@ module.exports = {
   bandnameExistsBand,
   phoneExistsSimpleForother,
   getReviews,
+  getNumberOfUsersByType,
+  getMessageHistory,
+  isPartOfTheEvent,
+  newMessage
 };

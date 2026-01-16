@@ -1,15 +1,17 @@
 const express = require("express");
 const router = express.Router();
 
-const {
-  modifyReview,
-  deleteReview,
-} = require("../databaseInsert");
-const {
-  deleteUser,
-} = require("../databaseQueriesUsers");
+const { modifyReview, deleteReview } = require("../databaseInsert");
+const { deleteUser } = require("../databaseQueriesUsers");
 
 const { checkIfLoggedInAsAdmin } = require("../databaseQueriesAdmin");
+
+const { getBandsPerCity } = require("../databaseQueriesBands");
+const {
+  getNumberOfEventsByType,
+  getTotalMoney,
+} = require("../databaseQueriesEvents");
+const { getNumberOfUsersByType } = require("../databaseQueriesBoth");
 
 function requireBody(fields) {
   return (req, res, next) => {
@@ -54,7 +56,9 @@ function requireParams(params) {
 }
 
 async function checkIfAdmin(username, password) {
-  return checkIfLoggedInAsAdmin(username, password).then((admins) => admins.length > 0);
+  return checkIfLoggedInAsAdmin(username, password).then(
+    (admins) => admins.length > 0
+  );
 }
 /**
  *  Admin removes a user by username
@@ -98,10 +102,12 @@ router.post(
         cityBands: [],
       });
     }
+
+    const cityBands = await getBandsPerCity();
     return res.json({
-      success: false,
-      message: "Under construction",
-      cityBands: [],
+      success: true,
+      message: "Number of bands per city retrieved successfully",
+      cityBands: cityBands,
     });
   }
 );
@@ -118,18 +124,37 @@ router.post(
   async (req, res) => {
     console.log("/admin/numOfEvents endpoint hit");
 
-    if (!(await checkIfAdmin(req.body.username, req.body.password))) {
+    try {
+      if (!(await checkIfAdmin(req.body.username, req.body.password))) {
+        return res.json({
+          success: false,
+          message: "Unauthorized: Admin credentials are invalid",
+          numberOfEvents: 0,
+        });
+      }
+
+      if (req.params.type !== "public" && req.params.type !== "private") {
+        return res.json({
+          success: false,
+          message: "Invalid event type",
+          numberOfEvents: 0,
+        });
+      }
+
+      const numberOfEvents = await getNumberOfEventsByType(req.params.type);
+      return res.json({
+        success: true,
+        message: `Number of events of type ${req.params.type} retrieved successfully`,
+        numberOfEvents: numberOfEvents,
+      });
+    } catch (err) {
+      console.error("Error in /admin/numOfEvents:", err);
       return res.json({
         success: false,
-        message: "Unauthorized: Admin credentials are invalid",
+        message: "Server error: " + err.message,
         numberOfEvents: 0,
       });
     }
-    return res.json({
-      success: false,
-      message: "Under construction",
-      numberOfEvents: 0,
-    });
   }
 );
 
@@ -152,11 +177,29 @@ router.post(
         numberOfUsers: 0,
       });
     }
-    return res.json({
-      success: false,
-      message: "Under construction",
-      numberOfUsers: 0,
-    });
+    try {
+      if (req.params.type !== "band" && req.params.type !== "user") {
+        return res.json({
+          success: false,
+          message: "Invalid user type",
+          numberOfUsers: 0,
+        });
+      }
+
+      const numberOfUsers = await getNumberOfUsersByType(req.params.type);
+      return res.json({
+        success: true,
+        message: `Number of users of type ${req.params.type} retrieved successfully`,
+        numberOfUsers: numberOfUsers,
+      });
+    } catch (err) {
+      console.error("Error in /admin/numOfUsers:", err);
+      return res.json({
+        success: false,
+        message: "Server error: " + err.message,
+        numberOfUsers: 0,
+      });
+    }
   }
 );
 
@@ -164,6 +207,7 @@ router.post(
  * Admin's system overview - gets number of earnings
  * Gets a JSON with "username" "password" (of the admin)
  * Returns JSON with {success:true/false , message, totalEarnings}
+ * (το 15% της τιμής των private events που έχουν κατάσταση done)
  */
 router.post(
   "/numberOfEarning",
@@ -177,11 +221,21 @@ router.post(
         totalEarnings: 0,
       });
     }
-    return res.json({
-      success: false,
-      message: "Under construction",
-      totalEarnings: 0,
-    });
+    try {
+      const totalEarnings = await getTotalMoney();
+      return res.json({
+        success: true,
+        message: `Total earnings retrieved successfully`,
+        totalEarnings: totalEarnings * 0.15,
+      });
+    } catch (err) {
+      console.error("Error in /admin/numberOfEarning:", err);
+      return res.json({
+        success: false,
+        message: "Server error: " + err.message,
+        totalEarnings: 0,
+      });
+    }
   }
 );
 
@@ -197,7 +251,7 @@ router.post(
   async (req, res) => {
     console.log("/reviewStatus endpoint hit");
 
-    if (!(await checkIfAdmin(req.params.username, req.params.password))) {
+    if (!(await checkIfAdmin(req.body.username, req.body.password))) {
       return res.status(401).json({
         success: false,
         error: "Unauthorized: Admin credentials are invalid",
@@ -273,7 +327,7 @@ router.delete(
   async (req, res) => {
     console.log("/reviewDeletion endpoint hit");
 
-    if (!(await checkIfAdmin(req.params.username, req.params.password))) {
+    if (!(await checkIfAdmin(req.body.username, req.body.password))) {
       return res.status(401).json({
         success: false,
         error: "Unauthorized: Admin credentials are invalid",
