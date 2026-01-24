@@ -3,17 +3,19 @@ async function checkLogin(type, username, password, messageBox) {
     // Make API call to your backend
     const typeOfConnection =
       type === "band" ? "/band/details" : "/user/details";
-    const response = await fetch(
-      `${typeOfConnection}?username=${encodeURIComponent(
-        username
-      )}&password=${encodeURIComponent(password)}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+
+    // This needs to be in the body and NOT the query
+    const response = await fetch(typeOfConnection, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        username,
+        password,
+      }),
+    });
+    
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error("Invalid username or password!");
@@ -31,7 +33,7 @@ async function checkLogin(type, username, password, messageBox) {
     }
 
     // Store user data in localStorage for session persistence
-    localStorage.setItem("currentUser", JSON.stringify(user));
+    localStorage.setItem("currentUser", JSON.stringify(user.user));
     localStorage.setItem("userType", type); // 'band' or 'simple'
     localStorage.setItem("loginTime", Date.now()); // Track login time
 
@@ -53,6 +55,12 @@ async function checkLogin(type, username, password, messageBox) {
     }
     return false;
   }
+}
+
+// Login user as a temporary guest, no credentials 
+
+function guestLogin() {
+   window.location.href = "guest.html"
 }
 
 // Function to check if user is logged in

@@ -57,7 +57,7 @@ async function checkIfUser(username, password) {
  * Gets a JSON with "username" "password"
  * Returns {success: true/false, message, user}
  */
-router.get(
+router.post(
   "/details",
   requireBody(["username", "password"]),
   async (req, res) => {
