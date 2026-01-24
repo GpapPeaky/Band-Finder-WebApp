@@ -12,53 +12,23 @@
 <body class = "reviewBody">
   <div class="reviewsContainer">
     <script src = "./JS/user.js"></script>
+
     <h1 id="title1"></h1>
     <ul id="reviews_list" class="review-list"></ul>
-
-    <!-- Logged IN USER ONLY -->
-    <div id="leave_review_section" style="display: none;">
-    <h1>Leave a Review</h1>
-    
-    <form id="review_form">
-        <label> 
-        Rating:
-        <select id="review_rating" required>
-            <option value="">Select</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select>
-        </label>
-    
-        <br><br>
-    
-        <textarea
-        id="review_text"
-        placeholder="Write your review..."
-        rows="4"
-        required
-        ></textarea>
-    
-        <br><br>
-    
-        <button type="submit">Submit Review</button>
-    </form>
-    </div>
     
     <h1 id="title2"></h1>
     <ul id="public_events_list" class="publicEvent-list"></ul>
 
     <script>
+
     const params = new URLSearchParams(window.location.search);
-    const bandName = params.get("band");
+    window.bandName = params.get("band");
     const frag = window.location.hash;
     const bandID = frag ? frag.substring(1) : "";
 
-    document.getElementById("title1").textContent =
+    document.getElementById("title1").textContent = 
         bandName ? `${bandName} Reviews` : "Band Reviews";
-    
+
     if (isLoggedIn() && bandName) {
         document.getElementById("leave_review_section").style.display = "block";
     }
@@ -98,7 +68,6 @@
         fetchBandReviews();
     }
 
-    <!-- Filter -->
     document.getElementById("title2").textContent =
         bandName ? `${bandName} Public Events` : "Band Public Events";
     

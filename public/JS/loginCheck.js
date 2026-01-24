@@ -51,7 +51,7 @@ async function checkLogin(type, username, password, messageBox) {
       } else if (type === "admin") {
         window.location.href = "admin.html";
       } else {
-        window.location.href = "user.html";
+        window.location.href = "userUpdate.html";
       }
     }, 1000);
     return true;
