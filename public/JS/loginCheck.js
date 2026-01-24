@@ -1,8 +1,8 @@
 async function checkLogin(type, username, password, messageBox) {
   try {
-    // Make API call to your backend
     let typeOfConnection;
 
+    console.log("Login attempt:", { type, username, password });
     if (type === "band") {
       typeOfConnection = "/band/details";
     } else if (type === "user") {
@@ -10,7 +10,7 @@ async function checkLogin(type, username, password, messageBox) {
     } else {
       typeOfConnection = "/admin/details";
     }
-    // This needs to be in the body and NOT the query
+
     const response = await fetch(typeOfConnection, {
       method: "POST",
       headers: {
@@ -21,7 +21,7 @@ async function checkLogin(type, username, password, messageBox) {
         password,
       }),
     });
-    
+
     if (!response.ok) {
       if (response.status === 401) {
         throw new Error("Invalid username or password!");
@@ -40,15 +40,17 @@ async function checkLogin(type, username, password, messageBox) {
 
     // Store user data in localStorage for session persistence
     localStorage.setItem("currentUser", JSON.stringify(user.user));
-    localStorage.setItem("userType", type); // 'band' or 'simple'
+    localStorage.setItem("userType", type); // 'band' or 'simple' or 'admin'
     localStorage.setItem("loginTime", Date.now()); // Track login time
 
     // Redirect after a short delay
     setTimeout(() => {
       if (type === "band") {
-        alert("band-dashboard.html");
+        alert("band.html");
+      } else if (type === "admin") {
+        window.location.href = "admin.html"; // Redirect to user profile page
       } else {
-        window.location.href = "userUpdate.html"; // Redirect to user profile page
+        window.location.href = "user.html"; // Redirect to user profile page
       }
     }, 1000);
     return true;
@@ -63,14 +65,13 @@ async function checkLogin(type, username, password, messageBox) {
   }
 }
 
-// Login user as a temporary guest, no credentials 
+// Login user as a temporary guest, no credentials
 
 function guestLogin() {
-   window.location.href = "guest.html"
+  window.location.href = "guest.html";
 }
 
 // Function to check if user is logged in
-
 function checkSession() {
   const user = localStorage.getItem("currentUser");
   const userType = localStorage.getItem("userType");
@@ -110,6 +111,10 @@ async function handleLoginFormSubmit(event, type) {
     username = document.getElementById("bandUsername").value;
     password = document.getElementById("bandPassword").value;
     messageBox = document.getElementById("bandmessagebox");
+  } else if (type === "admin") {
+    username = document.getElementById("adminUsername").value;
+    password = document.getElementById("adminPassword").value;
+    messageBox = document.getElementById("adminmessagebox");
   } else {
     username = document.getElementById("simpleUsername").value;
     password = document.getElementById("simplePassword").value;
@@ -132,6 +137,7 @@ async function handleLoginFormSubmit(event, type) {
 // Set up event listeners when DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
   // Check if user is already logged in
+  console.log("Checking session on page load...");
   const session = checkSession();
   if (session && window.location.pathname.includes("index.html")) {
     // User is already logged in, redirect to appropriate page
@@ -154,6 +160,13 @@ document.addEventListener("DOMContentLoaded", function () {
   if (bandForm) {
     bandForm.addEventListener("submit", function (event) {
       handleLoginFormSubmit(event, "band");
+    });
+  }
+  // Admin user form
+  const adminForm = document.getElementById("AdminUserForm");
+  if (adminForm) {
+    adminForm.addEventListener("submit", function (event) {
+      handleLoginFormSubmit(event, "admin");
     });
   }
 });

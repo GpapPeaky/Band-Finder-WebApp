@@ -15,7 +15,7 @@ const {
 const { insertUser, insertBand } = require("../databaseInsert");
 
 const { getUserByCredentials } = require("../databaseQueriesUsers");
-const { getBandByCredentials, bandExists ,getAllBands} = require("../databaseQueriesBands");
+const { getBandByCredentials, bandExists ,getAllBandsGeneral} = require("../databaseQueriesBands");
 const { checkIfLoggedInAsAdmin } = require("../databaseQueriesAdmin");
 const {
   getPublicEvents,
@@ -85,7 +85,7 @@ router.get("/getBands", async (req, res) => {
   console.log("/getBands endpoint hit");
 
   try{
-    const bands = await getAllBands();
+    const bands = await getAllBandsGeneral();
     return res.status(200).json({
       success: true,
       message: "Bands retrieved successfully!",

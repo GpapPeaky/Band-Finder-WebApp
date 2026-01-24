@@ -260,12 +260,12 @@ async function setBandAvailability(band_name, date) {
     if (conn) await conn.end();
   }
 }
-async function getAllBands() {
+async function getAllBandsGeneral() {
   let conn;
   try {
     conn = await getConnection();
     const [rows] = await conn.query(
-      "SELECT band_name, email ,music_genres, band_description,band_city, telephone, webpage FROM bands",
+      "SELECT band_id,band_name, email ,music_genres, band_description,band_city, telephone, webpage FROM bands",
     );
     return rows;
   } catch (err) {
@@ -465,5 +465,5 @@ module.exports = {
   getBandsByPublicEventType,
   getBandsByPublicEventPrice,
   getBandAvailability,
-  getAllBands,
+  getAllBandsGeneral,
 };
