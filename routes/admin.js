@@ -24,7 +24,7 @@ function requireBody(fields) {
 
     const missing = fields.filter(
       (f) =>
-        req.body[f] === undefined || req.body[f] === null || req.body[f] === ""
+        req.body[f] === undefined || req.body[f] === null || req.body[f] === "",
     );
 
     if (missing.length) {
@@ -41,7 +41,7 @@ function requireBody(fields) {
 function requireParams(params) {
   return (req, res, next) => {
     const missing = params.filter(
-      (p) => req.params[p] === undefined || req.params[p] === ""
+      (p) => req.params[p] === undefined || req.params[p] === "",
     );
 
     if (missing.length) {
@@ -57,9 +57,28 @@ function requireParams(params) {
 
 async function checkIfAdmin(username, password) {
   return checkIfLoggedInAsAdmin(username, password).then(
-    (admins) => admins.length > 0
+    (admins) => admins.length > 0,
   );
 }
+
+router.post(
+  "/details",
+  requireBody(["username", "password"]),
+  async (req, res) => {
+    console.log("/admin/details endpoint hit");
+    if (!(await checkIfAdmin(req.body.username, req.body.password))) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Admin credentials are invalid",
+      });
+    }else{
+      return res.json({
+        success: true,
+        message: "Admin credentials are valid",
+      });
+    }
+  },
+);
 /**
  *  Admin removes a user by username
  *  Gets a JSON with "username" "password" (of the admin)
@@ -81,7 +100,7 @@ router.delete(
     }
     const result = await deleteUser(req.params.user_name);
     return res.json(result);
-  }
+  },
 );
 
 /**
@@ -109,7 +128,7 @@ router.post(
       message: "Number of bands per city retrieved successfully",
       cityBands: cityBands,
     });
-  }
+  },
 );
 
 /**
@@ -155,7 +174,7 @@ router.post(
         numberOfEvents: 0,
       });
     }
-  }
+  },
 );
 
 /**
@@ -200,7 +219,7 @@ router.post(
         numberOfUsers: 0,
       });
     }
-  }
+  },
 );
 
 /**
@@ -236,7 +255,7 @@ router.post(
         totalEarnings: 0,
       });
     }
-  }
+  },
 );
 
 /**
@@ -312,7 +331,7 @@ router.post(
         error: "Server error: " + err.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -379,7 +398,7 @@ router.delete(
         error: "Server error: " + err.message,
       });
     }
-  }
+  },
 );
 
 module.exports = router;

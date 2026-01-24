@@ -1,4 +1,5 @@
 async function checkLogin(type, username, password, messageBox) {
+  console.log("Starting login check...");
   try {
     let typeOfConnection;
 
@@ -40,17 +41,17 @@ async function checkLogin(type, username, password, messageBox) {
 
     // Store user data in localStorage for session persistence
     localStorage.setItem("currentUser", JSON.stringify(user.user));
-    localStorage.setItem("userType", type); // 'band' or 'simple' or 'admin'
+    localStorage.setItem("userType", type); // 'band' or 'user' or 'admin'
     localStorage.setItem("loginTime", Date.now()); // Track login time
 
     // Redirect after a short delay
     setTimeout(() => {
       if (type === "band") {
-        alert("band.html");
+        window.location.href = "band.html";
       } else if (type === "admin") {
-        window.location.href = "admin.html"; // Redirect to user profile page
+        window.location.href = "admin.html";
       } else {
-        window.location.href = "user.html"; // Redirect to user profile page
+        window.location.href = "user.html";
       }
     }, 1000);
     return true;
@@ -65,63 +66,80 @@ async function checkLogin(type, username, password, messageBox) {
   }
 }
 
-// Login user as a temporary guest, no credentials
-
 function guestLogin() {
   window.location.href = "guest.html";
 }
 
-// Function to check if user is logged in
 function checkSession() {
   const user = localStorage.getItem("currentUser");
   const userType = localStorage.getItem("userType");
   const loginTime = localStorage.getItem("loginTime");
-  if (!user || !userType || !loginTime) {
-    return null; // No active session
-  }
-  // Check if session is expired (24 hours)
-  const sessionDuration = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-  const currentTime = Date.now();
-  if (currentTime - loginTime > sessionDuration) {
-    logout(); // Session expired
+  
+  // Check for undefined string or null
+  if (!user || !userType || !loginTime || user === "undefined") {
     return null;
   }
-  return {
-    user: JSON.parse(user),
-    userType: userType,
-  };
+  
+  const sessionDuration = 24 * 60 * 60 * 1000;
+  const currentTime = Date.now();
+  
+  if (currentTime - loginTime > sessionDuration) {
+    logout();
+    return null;
+  }
+  
+  try {
+    return {
+      user: JSON.parse(user),
+      userType: userType,
+    };
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    logout();
+    return null;
+  }
 }
-
-// Function to logout
 
 function logout() {
   localStorage.removeItem("currentUser");
   localStorage.removeItem("userType");
   localStorage.removeItem("loginTime");
-  // Redirect to login page
   window.location.href = "index.html";
 }
 
-// Function to handle form submission
 async function handleLoginFormSubmit(event, type) {
-  event.preventDefault(); // Prevent default form submission
-  let username, password, messageBox;
+  console.log("Form submit handler called for type:", type);
+  event.preventDefault();
+  event.stopPropagation(); // Stop the event from bubbling
+  
+  let username, password, messageBox, actualType;
 
   if (type === "band") {
     username = document.getElementById("bandUsername").value;
     password = document.getElementById("bandPassword").value;
     messageBox = document.getElementById("bandmessagebox");
+    actualType = document.getElementById("bandType").value;
   } else if (type === "admin") {
     username = document.getElementById("adminUsername").value;
     password = document.getElementById("adminPassword").value;
     messageBox = document.getElementById("adminmessagebox");
+    actualType = document.getElementById("adminType").value;
   } else {
     username = document.getElementById("simpleUsername").value;
     password = document.getElementById("simplePassword").value;
     messageBox = document.getElementById("messagebox");
+    actualType = document.getElementById("simpleType").value;
   }
 
-  // Basic validation
+  let apiType;
+  if (actualType === "Band User") {
+    apiType = "band";
+  } else if (actualType === "Admin User") {
+    apiType = "admin";
+  } else {
+    apiType = "user";
+  }
+
   if (!username || !password) {
     if (messageBox) {
       messageBox.textContent = "Please enter both username and password!";
@@ -130,26 +148,36 @@ async function handleLoginFormSubmit(event, type) {
     }
     return;
   }
-  // Call the login function
-  await checkLogin(type, username, password, messageBox);
+
+  await checkLogin(apiType, username, password, messageBox);
 }
 
 // Set up event listeners when DOM is loaded
 document.addEventListener("DOMContentLoaded", function () {
+  console.log("DOMContentLoaded fired");
+  
+  // Clear any corrupted localStorage
+  const user = localStorage.getItem("currentUser");
+  if (user === "undefined") {
+    console.log("Clearing corrupted localStorage");
+    localStorage.clear();
+  }
+  
   // Check if user is already logged in
-  console.log("Checking session on page load...");
   const session = checkSession();
   if (session && window.location.pathname.includes("index.html")) {
-    // User is already logged in, redirect to appropriate page
     if (session.userType === "band") {
       window.location.href = "band-dashboard.html";
     } else {
       window.location.href = "userUpdate.html";
     }
+    return; // Stop execution if redirecting
   }
+  
   // Simple user form
   const simpleForm = document.getElementById("SimpleUserForm");
   if (simpleForm) {
+    console.log("Attaching event to SimpleUserForm");
     simpleForm.addEventListener("submit", function (event) {
       handleLoginFormSubmit(event, "simple");
     });
@@ -158,13 +186,16 @@ document.addEventListener("DOMContentLoaded", function () {
   // Band user form
   const bandForm = document.getElementById("BandUserForm");
   if (bandForm) {
+    console.log("Attaching event to BandUserForm");
     bandForm.addEventListener("submit", function (event) {
       handleLoginFormSubmit(event, "band");
     });
   }
+  
   // Admin user form
   const adminForm = document.getElementById("AdminUserForm");
   if (adminForm) {
+    console.log("Attaching event to AdminUserForm");
     adminForm.addEventListener("submit", function (event) {
       handleLoginFormSubmit(event, "admin");
     });

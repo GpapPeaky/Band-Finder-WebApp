@@ -16,70 +16,84 @@
   <body>
     <div class="container">
       <h1>Login</h1>
-      <!-- Remove the outer <form id="login-form"> wrapper -->
+      <form id="SimpleUserForm">
+        <input
+          type="text"
+          name="username"
+          id="simpleUsername"
+          placeholder="Username"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          id="simplePassword"
+          placeholder="Password"
+          required
+        />
+        <select name="type" id="simpleType" required>
+          <option value="Simple User">Simple User</option>
+          <option value="Band User">Band User</option>
+          <option value="Admin User">Admin</option>
+        </select>
+        <div id="messagebox"></div>
+        <button class="submitbtton" type="submit">Login</button>
 
-      <div class="tab-content">
-        <div id="simple" class="tab-pane active">
-          <form id="SimpleUserForm">
-            <input
-              type="text"
-              id="simpleUsername"
-              placeholder="Username"
-              required
-            />
-            <input
-              type="password"
-              id="simplePassword"
-              placeholder="Password"
-              required
-            />
-            <div id="messagebox"></div>
-            <button type="submit">Login</button>
-          </form>
-        </div>
+        <!-- Guest Login Button -->
+        <button class="guestButton" type="button" onclick="guestLogin()">
+          Login as Guest
+        </button>
+      </form>
 
-        <div id="band" class="tab-pane">
-          <form id="BandUserForm">
-            <input
-              type="text"
-              id="bandUsername"
-              placeholder="Username"
-              required
-            />
-            <input
-              type="password"
-              id="bandPassword"
-              placeholder="Password"
-              required
-            />
-            <div id="bandmessagebox"></div>
-            <button type="submit">Login</button>
-          </form>
-        </div>
-
-        <div id="admin" class="tab-pane">
-          <form id="AdminUserForm">
-            <input
-              type="text"
-              id="adminUsername"
-              placeholder="Username"
-              required
-            />
-            <input
-              type="password"
-              id="adminPassword"
-              placeholder="Password"
-              required
-            />
-            <div id="adminmessagebox"></div>
-            <button type="submit">Login</button>
-          </form>
-        </div>
-      </div>
-
-      <button type="button" onclick="guestLogin()">Login as Guest</button>
+      <form id="BandUserForm">
+        <input
+          type="text"
+          name="username"
+          id="bandUsername"
+          placeholder="Band username"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          id="bandPassword"
+          placeholder="Password"
+          required
+        />
+        <select name="type" id="bandType" required>
+          <option value="Simple User">Simple User</option>
+          <option value="Band User">Band User</option>
+          <option value="Admin User">Admin</option>
+        </select>
+        <div id="bandmessagebox"></div>
+        <button class="submitbtton" type="submit">Login</button>
+      </form>
+      <form id="AdminUserForm">
+        <input
+          type="text"
+          name="username"
+          id="adminUsername"
+          placeholder="Admin username"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          id="adminPassword"
+          placeholder="Password"
+          required
+        />
+        <select name="type" id="adminType" required>
+          <option value="Simple User">Simple User</option>
+          <option value="Band User">Band User</option>
+          <option value="Admin User">Admin</option>
+        </select>
+        <div id="adminmessagebox"></div>
+        <button class="submitbtton" type="submit">Login</button>
+      </form>
       <p>Don't have an account? <a href="./register.html">Register</a></p>
     </div>
+    <script src="./JS/loginCheck.js"></script>
   </body>
   <script>
     let simpleType = document.getElementById("simpleType");
@@ -124,5 +138,4 @@
     // Initialize forms
     updateForms("Simple User");
   </script>
-  <script src="./JS/loginCheck.js"></script>
 </html>

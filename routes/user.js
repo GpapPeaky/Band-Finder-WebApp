@@ -2,9 +2,16 @@ const express = require("express");
 const router = express();
 
 const { phoneExistsSimpleForother } = require("../databaseQueriesBoth");
-const { getBandIdByName, getBandAvailability } = require("../databaseQueriesBands");
+const {
+  getBandIdByName,
+  getBandAvailability,
+} = require("../databaseQueriesBands");
 const { insertReview, insertPrivateEvent } = require("../databaseInsert");
-const { getUserByCredentials, updateUser, getUserIdByName } = require("../databaseQueriesUsers");
+const {
+  getUserByCredentials,
+  updateUser,
+  getUserIdByName,
+} = require("../databaseQueriesUsers");
 
 function requireBody(fields) {
   return (req, res, next) => {
@@ -17,7 +24,7 @@ function requireBody(fields) {
 
     const missing = fields.filter(
       (f) =>
-        req.body[f] === undefined || req.body[f] === null || req.body[f] === ""
+        req.body[f] === undefined || req.body[f] === null || req.body[f] === "",
     );
 
     if (missing.length) {
@@ -34,7 +41,7 @@ function requireBody(fields) {
 function requireParams(params) {
   return (req, res, next) => {
     const missing = params.filter(
-      (p) => req.params[p] === undefined || req.params[p] === ""
+      (p) => req.params[p] === undefined || req.params[p] === "",
     );
 
     if (missing.length) {
@@ -66,7 +73,7 @@ router.post(
     try {
       const users = await getUserByCredentials(
         req.body.username,
-        req.body.password
+        req.body.password,
       );
 
       if (users.length > 0) {
@@ -89,7 +96,7 @@ router.post(
         user: null,
       });
     }
-  }
+  },
 );
 /**
  * User requests a band for a private event
@@ -98,10 +105,19 @@ router.post(
  */
 router.put(
   "/requestBand",
-  requireBody(["username", "password", "band_name", "date", "event_type", "event_city", "event_address", "event_description"]),
+  requireBody([
+    "username",
+    "password",
+    "band_name",
+    "date",
+    "event_type",
+    "event_city",
+    "event_address",
+    "event_description",
+  ]),
   async (req, res) => {
     console.log("/user/requestBand endpoint hit");
-    
+
     try {
       if (!(await checkIfUser(req.body.username, req.body.password))) {
         return res.json({
@@ -128,7 +144,7 @@ router.put(
         case "party":
           price = 500;
           break;
-        
+
         default:
           price = 300;
       }
@@ -136,14 +152,14 @@ router.put(
       // Geocoding
       const query = `${req.body.event_address}, ${req.body.event_city}`;
       const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-        query
+        query,
       )}&format=json&addressdetails=1&limit=1`;
       let lat, lon;
       try {
         const response = await fetch(url, {
           headers: {
-            "User-Agent": "app/1.0 (https://example.com/contact)"
-          }
+            "User-Agent": "app/1.0 (https://example.com/contact)",
+          },
         });
         const data = await response.json();
         if (data.length > 0) {
@@ -167,10 +183,10 @@ router.put(
         req.body.event_city,
         req.body.event_address,
         lat,
-        lon
-      ]
+        lon,
+      ];
 
-      const msg = await insertPrivateEvent(eventRequest);  // Added await
+      const msg = await insertPrivateEvent(eventRequest); // Added await
 
       return res.json({
         success: true,
@@ -178,7 +194,7 @@ router.put(
       });
     } catch (err) {
       console.error("Error in /user/requestBand:", err);
-      
+
       // Check for specific errors
       if (err.message.includes("Band not found")) {
         return res.json({
@@ -186,21 +202,21 @@ router.put(
           message: "Band not found",
         });
       }
-      
+
       if (err.message.includes("User not found")) {
         return res.json({
           success: false,
           message: "User not found",
         });
       }
-      
+
       // Generic error handling
       return res.json({
         success: false,
         message: "Error requesting band: " + err.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -213,7 +229,7 @@ router.get(
   requireBody(["username", "password", "band_name"]),
   async (req, res) => {
     console.log("/user/seeAvailability endpoint hit");
-    
+
     try {
       if (!(await checkIfUser(req.body.username, req.body.password))) {
         return res.json({
@@ -222,7 +238,7 @@ router.get(
           dates: [],
         });
       }
-      
+
       // Availability is marked as private events with status "available"
       const availability = await getBandAvailability(req.body.band_name);
 
@@ -233,7 +249,7 @@ router.get(
       });
     } catch (err) {
       console.error("Error in /user/seeAvailability:", err);
-      
+
       // Check if it's a "Band not found" error
       if (err.message.includes("Band not found")) {
         return res.json({
@@ -242,7 +258,7 @@ router.get(
           dates: [],
         });
       }
-      
+
       // Generic error handling
       return res.json({
         success: false,
@@ -250,7 +266,7 @@ router.get(
         dates: [],
       });
     }
-  }
+  },
 );
 /**
  * Submit a review for a band
@@ -292,7 +308,7 @@ router.post(
         error: "Server error: " + err.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -310,8 +326,6 @@ router.post(
     "firstname",
     "gender",
     "lastname",
-    "lat",
-    "lon",
     "username",
     "password",
     "telephone",
@@ -329,7 +343,7 @@ router.post(
       if (!lat || !lon || isNaN(lat) || isNaN(lon)) {
         const query = `${data.address}, ${data.city}, ${data.country}`;
         const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-          query
+          query,
         )}&format=json&addressdetails=1&limit=1`;
 
         try {
@@ -347,14 +361,16 @@ router.post(
           const osmData = await response.json();
 
           if (!osmData || osmData.length === 0) {
-            return res.status(400).json({
+            /*return res.status(400).json({
               success: false,
               message: "Address not found on map",
-            });
+            });*/
+            lat = null;
+            lon = null;
+          } else {
+            lat = parseFloat(osmData[0].lat);
+            lon = parseFloat(osmData[0].lon);
           }
-
-          lat = parseFloat(osmData[0].lat);
-          lon = parseFloat(osmData[0].lon);
         } catch (err) {
           console.error("OSM error:", err);
           return res.status(500).json({
@@ -366,7 +382,7 @@ router.post(
 
       const telephoneTaken = await phoneExistsSimpleForother(
         data.username,
-        data.telephone
+        data.telephone,
       );
 
       if (telephoneTaken) {
@@ -390,7 +406,7 @@ router.post(
         data.address,
         data.telephone,
         lon,
-        lat
+        lat,
       );
 
       return res.status(200).json(result);
@@ -401,7 +417,7 @@ router.post(
         error: err.message,
       });
     }
-  }
+  },
 );
 
 module.exports = router;

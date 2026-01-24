@@ -139,7 +139,7 @@
           type="tel"
           name="telephone"
           id="phone"
-          pattern="[0-9]{10,14}"
+          minlength="9"
           placeholder="Enter your phone number"
           required
         />
@@ -195,7 +195,7 @@
 
       // Check if user is logged in
       const session = checkSession();
-      if (!session || session.userType !== "simple") {
+      if (!session || session.userType !== "user") {
         alert("Please login first!");
         window.location.href = "index.html";
       }
@@ -283,7 +283,7 @@
           console.log("Full data:", JSON.stringify(jsonData, null, 2));
 
           try {
-            const response = await fetch("/update-user", {
+            const response = await fetch("/user/update-user", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
