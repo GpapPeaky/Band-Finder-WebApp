@@ -1,0 +1,8 @@
+.PublicEventHeader {
+  text-align: center;          /* Center the text */
+  margin: 5px 0;              /* Space above and below */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+  font-style: bold;
+  color: #222222FF;                 /* Dark gray text */
+  font-size: 25px;
+}

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Band Reviews</title>
+  <link rel="stylesheet" href="./CSS/style.css" />
+  <link rel="stylesheet" href="./CSS/navigation.css">
+  <link rel="stylesheet" href="./CSS/reviewCards.css">
+  <link rel="stylesheet" href="./CSS/publicEventCards.css">
+</head>
+
+<body class = "reviewBody">
+  <div class="reviewsContainer">
+    <h1 id="title"></h1>
+
+    <div class="ReviewHeader">Reviews</div>
+    <ul id="reviews_list" class="review-list"></ul>
+
+    <div class = "PublicEventHeader">Public Events</div>
+    <ul id="events_list"></ul>
+    
+    <!-- TODO: Add a filter thingy -->
+
+    <script>
+    const params = new URLSearchParams(window.location.search);
+    const bandName = params.get("band");
+    
+    document.getElementById("title").textContent =
+        bandName ? `${bandName} Reviews` : "Band Reviews";
+    
+    async function fetchBandReviews() {
+        const res = await fetch(
+        `/general/reviews/${encodeURIComponent(bandName)}`
+        );
+        const data = await res.json();
+    
+        const list = document.getElementById("reviews_list");
+        list.innerHTML = "";
+    
+        if (!data.reviews || data.reviews.length === 0) {
+            list.innerHTML = "<p>No reviews yet.</p>";
+            return;
+        }
+    
+        data.reviews.forEach(r => {
+        const li = document.createElement("li");
+
+        // Show ONLY published reviews
+        if (r.status == "published") {
+            li.innerHTML = `
+            <h3>${r.sender}</h3>
+            <p><strong>Rating:</strong> ${r.rating}/5</p>
+            <p>${r.review || ""}</p>
+            `;
+            li.classList.add("review"+ r.rating +"-card");
+        }
+    
+        list.appendChild(li);
+        });
+    }
+    
+    if (bandName) {
+        fetchBandReviews();
+    }
+    </script>
+  </div>
+</body>
+</html>

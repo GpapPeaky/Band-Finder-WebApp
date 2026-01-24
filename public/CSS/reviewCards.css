@@ -1,0 +1,81 @@
+.ReviewHeader {
+  text-align: center;          /* Center the text */
+  margin: 5px 0;              /* Space above and below */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+  color: #222222FF;                 /* Dark gray text */
+  font-size: 25px;
+}
+
+.review-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 5px;
+}
+/* Chill Red → Vibrant Green Scale */
+.review1-card { /* Chill Red */
+  background: #ff6b6b; /* soft red */
+}
+
+.review2-card { /* Orange */
+  background: #ffb86b; /* warm orange */
+}
+
+.review3-card { /* Yellow */
+  background: #fff38a; /* sunny yellow */
+}
+
+.review4-card { /* Light Green */
+  background: #baff88; /* fresh light green */
+}
+
+.review5-card { /* Vibrant Green */
+  background: #71ff6a; /* vivid green */
+}
+
+/* Hover effect (slightly brighter / lighter version) */
+.review1-card:hover { background: #ff8787; }
+.review2-card:hover { background: #ffc68f; }
+.review3-card:hover { background: #fffba0; }
+.review4-card:hover { background: #d0ff9d; }
+.review5-card:hover { background: #85ff82; }
+
+/* Shared styles for all review cards */
+.review1-card, .review2-card, .review3-card, .review4-card, .review5-card {
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px;
+  cursor: pointer;
+}
+
+.review1-card:hover,
+.review2-card:hover,
+.review3-card:hover,
+.review4-card:hover,
+.review5-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
+}
+
+.review1-card h3,
+.review2-card h3,
+.review3-card h3,
+.review4-card h3,
+.review5-card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.review1-card p,
+.review2-card p,
+.review3-card p,
+.review4-card p,
+.review5-card p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+}
