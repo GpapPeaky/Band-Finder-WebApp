@@ -11,21 +11,21 @@
 
 <body class = "reviewBody">
   <div class="reviewsContainer">
-    <h1 id="title"></h1>
-
-    <div class="ReviewHeader">Reviews</div>
+    <h1 id="title1"></h1>
     <ul id="reviews_list" class="review-list"></ul>
-
-    <div class = "PublicEventHeader">Public Events</div>
-    <ul id="events_list"></ul>
     
-    <!-- TODO: Add a filter thingy -->
+    <h1 id="title2"></h1>
+    <ul id="public_events_list" class="publicEvent-list"></ul>
+
+    <!-- TODO: Add event filter by date/genre -->
 
     <script>
     const params = new URLSearchParams(window.location.search);
     const bandName = params.get("band");
-    
-    document.getElementById("title").textContent =
+    const frag = window.location.hash;
+    const bandID = frag ? frag.substring(1) : "";
+
+    document.getElementById("title1").textContent =
         bandName ? `${bandName} Reviews` : "Band Reviews";
     
     async function fetchBandReviews() {
@@ -61,6 +61,49 @@
     
     if (bandName) {
         fetchBandReviews();
+    }
+
+    document.getElementById("title2").textContent =
+        bandName ? `${bandName} Public Events` : "Band Public Events";
+    
+    async function fetchBandPublicEvents() {
+        const res = await fetch(
+        `/general/seePublicEvents`
+        );
+        const data = await res.json();
+    
+        const list = document.getElementById("public_events_list");
+        list.innerHTML = "";
+    
+        if (!data.events || data.events.length === 0) {
+            list.innerHTML = "<p>No public events.</p>";
+            return;
+        }
+
+        const id = bandID;
+    
+        data.events.forEach(r => {
+        const li = document.createElement("li");
+
+        // Show ONLY published events
+        if (r.band_id == id) {
+            li.innerHTML = `
+            <h3><i>${r.event_type}</i></h3>
+            <p><strong>${r.event_city}</strong></p>
+            <p class="desc"> ${r.event_address}</p>
+            <p class="desc">${r.event_datetime}</p>
+            <p class="desc">${r.event_description || ""}</p>
+            <p class="desc">${r.participants_price || ""}</p>
+            `;
+            li.classList.add("publicEvent-card");
+        }
+    
+        list.appendChild(li);
+        });
+    }
+    
+    if (bandName) {
+        fetchBandPublicEvents();
     }
     </script>
   </div>

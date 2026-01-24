@@ -25,7 +25,7 @@ async function fetchBands() {
 
     // Add band name and band_id to the query
     li.addEventListener("click", () => {
-        window.location.href = `/reviews.html?band=${encodeURIComponent(b.band_name)}`;
+        window.location.href = `/reviews.html?band=${encodeURIComponent(b.band_name)}#${encodeURIComponent(b.band_id)}`;
     });
 
 
