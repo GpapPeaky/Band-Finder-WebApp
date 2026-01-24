@@ -91,7 +91,6 @@ router.get(
     }
   }
 );
-
 /**
  * User requests a band for a private event
  * Gets a JSON with "username" , "password" (of the user), "band_name" , "date", "event_type", "event_city", "event_address"
@@ -102,79 +101,105 @@ router.put(
   requireBody(["username", "password", "band_name", "date", "event_type", "event_city", "event_address", "event_description"]),
   async (req, res) => {
     console.log("/user/requestBand endpoint hit");
-    if (!(await checkIfUser(req.body.username, req.body.password))) {
+    
+    try {
+      if (!(await checkIfUser(req.body.username, req.body.password))) {
+        return res.json({
+          success: false,
+          message: "Unauthorized: Invalid credentials",
+        });
+      }
+
+      // Requests for private events will flow like this:
+      //  request is handled as a private event with status "pending"
+      //  and the band accepts/rejects accordingly
+
+      const band_id = await getBandIdByName(req.body.band_name);
+      const user_id = await getUserIdByName(req.body.username);
+
+      let price;
+      switch (req.body.event_type) {
+        case "wedding":
+          price = 2000;
+          break;
+        case "baptism":
+          price = 1000;
+          break;
+        case "party":
+          price = 500;
+          break;
+        
+        default:
+          price = 300;
+      }
+
+      // Geocoding
+      const query = `${req.body.event_address}, ${req.body.event_city}`;
+      const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+        query
+      )}&format=json&addressdetails=1&limit=1`;
+      let lat, lon;
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "User-Agent": "app/1.0 (https://example.com/contact)"
+          }
+        });
+        const data = await response.json();
+        if (data.length > 0) {
+          lat = parseFloat(data[0].lat);
+          lon = parseFloat(data[0].lon);
+        }
+      } catch (err) {
+        console.error("Geocoding error:", err);
+      }
+
+      // Construct object
+      const eventRequest = [
+        band_id,
+        price,
+        "pending", // status
+        "pending", // band_decision
+        user_id,
+        req.body.event_type,
+        req.body.date,
+        req.body.event_description,
+        req.body.event_city,
+        req.body.event_address,
+        lat,
+        lon
+      ]
+
+      const msg = await insertPrivateEvent(eventRequest);  // Added await
+
+      return res.json({
+        success: true,
+        message: msg,
+      });
+    } catch (err) {
+      console.error("Error in /user/requestBand:", err);
+      
+      // Check for specific errors
+      if (err.message.includes("Band not found")) {
+        return res.json({
+          success: false,
+          message: "Band not found",
+        });
+      }
+      
+      if (err.message.includes("User not found")) {
+        return res.json({
+          success: false,
+          message: "User not found",
+        });
+      }
+      
+      // Generic error handling
       return res.json({
         success: false,
-        message: "Unauthorized: Invalid credentials",
+        message: "Error requesting band: " + err.message,
       });
     }
-
-    // Requests for private events will flow like this:
-    //  request is handled as a private event with status "pending"
-    //  and the band accepts/rejects accordingly
-
-    const band_id = getBandIdByName(req.body.band_name);
-    const user_id = getUserIdByName(req.body.username);
-
-    let price;
-    switch (req.body.event_type) {
-      case "wedding":
-        price = 2000;
-        break;
-      case "baptism":
-        price = 1000;
-        break;
-      case "party":
-        price = 500;
-        break;
-      
-      default:
-        price = 300;
-    }
-
-    // Geocoding
-    const query = `${req.body.event_address}, ${req.body.event_city}`;
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      query
-    )}&format=json&addressdetails=1&limit=1`;
-    let lat, lon;
-    try {
-      const response = await fetch(url, {
-        headers: {
-          "User-Agent": "app/1.0 (https://example.com/contact)"
-        }
-      });
-      const data = await response.json();
-      if (data.length > 0) {
-        lat = parseFloat(data[0].lat);
-        lon = parseFloat(data[0].lon);
-      }
-    } catch (err) {
-      console.error("Geocoding error:", err);
-    }
-
-    // Construct object
-    const eventRequest = [
-      band_id,
-      price,
-      "pending", // status
-      "pending", // band_decision
-      user_id,
-      req.body.event_type,
-      req.body.date,
-      req.body.event_description,
-      req.body.event_city,
-      req.body.event_address,
-      lat,
-      lon
-    ]
-
-    const msg = insertPrivateEvent(eventRequest);
-
-    return res.json({
-      success: true,
-      message: msg,
-    });
   }
 );
 
@@ -188,25 +213,45 @@ router.get(
   requireBody(["username", "password", "band_name"]),
   async (req, res) => {
     console.log("/user/seeAvailability endpoint hit");
-    if (!(await checkIfUser(req.body.username, req.body.password))) {
+    
+    try {
+      if (!(await checkIfUser(req.body.username, req.body.password))) {
+        return res.json({
+          success: false,
+          message: "Unauthorized: Invalid credentials",
+          dates: [],
+        });
+      }
+      
+      // Availability is marked as private events with status "available"
+      const availability = await getBandAvailability(req.body.band_name);
+
+      return res.json({
+        success: true,
+        message: "Band " + req.body.band_name + " availability retrieved",
+        dates: availability,
+      });
+    } catch (err) {
+      console.error("Error in /user/seeAvailability:", err);
+      
+      // Check if it's a "Band not found" error
+      if (err.message.includes("Band not found")) {
+        return res.json({
+          success: false,
+          message: "Band not found",
+          dates: [],
+        });
+      }
+      
+      // Generic error handling
       return res.json({
         success: false,
-        message: "Unauthorized: Invalid credentials",
+        message: "Error retrieving band availability: " + err.message,
         dates: [],
       });
     }
-    
-    // Availability is marked as private events with status "available"
-    const availability = await getBandAvailability(req.body.band_name);
-
-    return res.json({
-      success: true,
-      message: "Band " + req.body.band_name + " availability retrieved",
-      dates: availability,
-    });
   }
 );
-
 /**
  * Submit a review for a band
  * Gets a JSON with "band_name", "sender", "password", "review", "rating"

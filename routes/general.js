@@ -10,21 +10,17 @@ const {
   getReviews,
   getMessageHistory,
   isPartOfTheEvent,
-  newMessage
+  newMessage,
 } = require("../databaseQueriesBoth");
-const {
-  insertUser,
-  insertBand,
-} = require("../databaseInsert");
+const { insertUser, insertBand } = require("../databaseInsert");
 
-const {
-  getUserByCredentials,
-} = require("../databaseQueriesUsers");
-const {
-  getBandByCredentials,
-  bandExists,
-} = require("../databaseQueriesBands");
+const { getUserByCredentials } = require("../databaseQueriesUsers");
+const { getBandByCredentials, bandExists } = require("../databaseQueriesBands");
 const { checkIfLoggedInAsAdmin } = require("../databaseQueriesAdmin");
+const {
+  getPublicEvents,
+  getPrivateEvents,
+} = require("../databaseQueriesEvents");
 
 function requireBody(fields) {
   return (req, res, next) => {
@@ -66,16 +62,20 @@ function requireParams(params) {
 
     next();
   };
-} 
+}
 async function checkIfUser(username, password) {
   const users = await getUserByCredentials(username, password);
   return users.length > 0;
 }
 async function checkIfBand(username, password) {
-  return getBandByCredentials(username, password).then((bands) => bands.length > 0);
+  return getBandByCredentials(username, password).then(
+    (bands) => bands.length > 0
+  );
 }
 async function checkIfAdmin(username, password) {
-  return checkIfLoggedInAsAdmin(username, password).then((admins) => admins.length > 0);
+  return checkIfLoggedInAsAdmin(username, password).then(
+    (admins) => admins.length > 0
+  );
 }
 /**
  * User gets events based on filter ( date / music / distance ( only for user))
@@ -111,13 +111,7 @@ router.get(
  */
 router.put(
   "/sendMessage",
-  requireBody([
-    "sender_type",
-    "username",
-    "password",
-    "message",
-    "event_id",
-  ]),
+  requireBody(["sender_type", "username", "password", "message", "event_id"]),
   async (req, res) => {
     console.log("/sendMessage endpoint hit");
     const ok =
@@ -132,18 +126,26 @@ router.put(
       });
     }
 
-    let isPart = await isPartOfTheEvent(req.body.event_id, req.body.sender_type, req.body.username);
-    if(!isPart){
+    let isPart = await isPartOfTheEvent(
+      req.body.event_id,
+      req.body.sender_type,
+      req.body.username
+    );
+    if (!isPart) {
       return res.json({
         success: false,
         message: "Unauthorized: You are not part of this event",
       });
-    }else{
+    } else {
       console.log("User/Band is part of the event, retrieving messages...");
     }
 
-    try{
-      const messages = await newMessage(req.body.event_id, req.body.sender_type, req.body.message);
+    try {
+      const messages = await newMessage(
+        req.body.event_id,
+        req.body.sender_type,
+        req.body.message
+      );
       return res.json({
         success: true,
         message: "Messages sent successfully",
@@ -162,13 +164,9 @@ router.put(
  * Gets a JSON with "sender_type"(user or band) , "username" , "password" , "event_id"
  * Returns {success: true/false , message, messages[] }
  */
-router.post("/messageHistory",
-  requireBody([
-    "sender_type",
-    "username",
-    "password",
-    "event_id"
-  ]),
+router.post(
+  "/messageHistory",
+  requireBody(["sender_type", "username", "password", "event_id"]),
   async (req, res) => {
     console.log("/messageHistory endpoint hit");
     const ok =
@@ -183,18 +181,26 @@ router.post("/messageHistory",
       });
     }
 
-    let isPart = await isPartOfTheEvent(req.body.event_id, req.body.sender_type, req.body.username);
-    if(!isPart){
+    let isPart = await isPartOfTheEvent(
+      req.body.event_id,
+      req.body.sender_type,
+      req.body.username
+    );
+    if (!isPart) {
       return res.json({
         success: false,
         message: "Unauthorized: You are not part of this event",
       });
-    }else{
+    } else {
       console.log("User/Band is part of the event, retrieving messages...");
     }
 
-    try{
-      const messages = await getMessageHistory(req.body.event_id, req.body.sender_type, req.body.username);
+    try {
+      const messages = await getMessageHistory(
+        req.body.event_id,
+        req.body.sender_type,
+        req.body.username
+      );
       return res.json({
         success: true,
         message: "Messages retrieved successfully",
@@ -277,7 +283,6 @@ router.get(
     }
   }
 );
-
 
 /**
  * Registration endpoint for both users and bands
@@ -464,5 +469,68 @@ router.post("/register", async (req, res) => {
     });
   }
 });
+
+/**
+ * User and guest sees all public events
+ * Returns {success: true/false , message , events[]}
+ */
+router.get("/seePublicEvents", async (req, res) => {
+  console.log("/user/seePublicEvents endpoint hit");
+  try {
+    // Public events are those with event_type "public"
+    const events = await getPublicEvents();
+    return res.status(200).json({
+      success: true,
+      message: "Public events retrieved successfully!",
+      events: events,
+    });
+  } catch (err) {
+    console.error("Error retrieving public events:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Server error: " + err.message,
+    });
+  }
+});
+
+router.post(
+  "/getPrivateEvents",
+  requireBody(["user_type", "username", "password"]),
+  async (req, res) => {
+    console.log("/getPrivateEvents endpoint hit");
+
+    try {
+      const ok =
+        req.body.user_type === "user"
+          ? await checkIfUser(req.body.username, req.body.password)
+          : await checkIfBand(req.body.username, req.body.password);
+
+      if (!ok) {
+        return res.json({
+          success: false,
+          message: "Unauthorized: Invalid credentials",
+        });
+      }
+
+      // Fetch private events for the user
+      const privateEvents = await getPrivateEvents(
+        req.body.user_type,
+        req.body.username
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: "Private events retrieved successfully!",
+        events: privateEvents,
+      });
+    } catch (err) {
+      console.error("Error retrieving private events:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Server error: " + err.message,
+      });
+    }
+  }
+);
 
 module.exports = router;
