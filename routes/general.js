@@ -15,7 +15,7 @@ const {
 const { insertUser, insertBand } = require("../databaseInsert");
 
 const { getUserByCredentials } = require("../databaseQueriesUsers");
-const { getBandByCredentials, bandExists } = require("../databaseQueriesBands");
+const { getBandByCredentials, bandExists ,getAllBands} = require("../databaseQueriesBands");
 const { checkIfLoggedInAsAdmin } = require("../databaseQueriesAdmin");
 const {
   getPublicEvents,
@@ -33,7 +33,7 @@ function requireBody(fields) {
 
     const missing = fields.filter(
       (f) =>
-        req.body[f] === undefined || req.body[f] === null || req.body[f] === ""
+        req.body[f] === undefined || req.body[f] === null || req.body[f] === "",
     );
 
     if (missing.length) {
@@ -50,7 +50,7 @@ function requireBody(fields) {
 function requireParams(params) {
   return (req, res, next) => {
     const missing = params.filter(
-      (p) => req.params[p] === undefined || req.params[p] === ""
+      (p) => req.params[p] === undefined || req.params[p] === "",
     );
 
     if (missing.length) {
@@ -69,14 +69,36 @@ async function checkIfUser(username, password) {
 }
 async function checkIfBand(username, password) {
   return getBandByCredentials(username, password).then(
-    (bands) => bands.length > 0
+    (bands) => bands.length > 0,
   );
 }
 async function checkIfAdmin(username, password) {
   return checkIfLoggedInAsAdmin(username, password).then(
-    (admins) => admins.length > 0
+    (admins) => admins.length > 0,
   );
 }
+/**
+ * Gets all bands for both users and guests
+ * Returns {success: true/false , bands[]}
+ */
+router.get("/getBands", async (req, res) => {
+  console.log("/getBands endpoint hit");
+
+  try{
+    const bands = await getAllBands();
+    return res.status(200).json({
+      success: true,
+      message: "Bands retrieved successfully!",
+      bands: bands,
+    });
+  } catch (err) {
+    console.error("Error retrieving bands:", err);
+    return res.status(500).json({
+      success: false,
+      error: "Server error: " + err.message,
+    });
+  }
+});
 /**
  * User gets events based on filter ( date / music / distance ( only for user))
  * Gets a JSON with "usertype" "username" , "password" (of the user if filter is distance), "filter" (date/music/distance)
@@ -101,7 +123,7 @@ router.get(
       success: false,
       message: "Under construction",
     });
-  }
+  },
 );
 
 /**
@@ -129,7 +151,7 @@ router.put(
     let isPart = await isPartOfTheEvent(
       req.body.event_id,
       req.body.sender_type,
-      req.body.username
+      req.body.username,
     );
     if (!isPart) {
       return res.json({
@@ -144,7 +166,7 @@ router.put(
       const messages = await newMessage(
         req.body.event_id,
         req.body.sender_type,
-        req.body.message
+        req.body.message,
       );
       return res.json({
         success: true,
@@ -157,7 +179,7 @@ router.put(
         error: "Server error: " + err.message,
       });
     }
-  }
+  },
 );
 /**
  * Get message history endpoint ( For user and band )
@@ -184,7 +206,7 @@ router.post(
     let isPart = await isPartOfTheEvent(
       req.body.event_id,
       req.body.sender_type,
-      req.body.username
+      req.body.username,
     );
     if (!isPart) {
       return res.json({
@@ -199,7 +221,7 @@ router.post(
       const messages = await getMessageHistory(
         req.body.event_id,
         req.body.sender_type,
-        req.body.username
+        req.body.username,
       );
       return res.json({
         success: true,
@@ -213,7 +235,7 @@ router.post(
         error: "Server error: " + err.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -281,7 +303,7 @@ router.get(
         error: "Server error: " + err.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -515,7 +537,7 @@ router.post(
       // Fetch private events for the user
       const privateEvents = await getPrivateEvents(
         req.body.user_type,
-        req.body.username
+        req.body.username,
       );
 
       return res.status(200).json({
@@ -530,7 +552,7 @@ router.post(
         error: "Server error: " + err.message,
       });
     }
-  }
+  },
 );
 
 module.exports = router;

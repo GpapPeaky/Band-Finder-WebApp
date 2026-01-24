@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <!-- INDEX.HTML | LOGIN PAGE -->
   <head>
     <meta charset="UTF-8" />
-    <title>Exercise 3 | Log in</title>
+    <title>Log in</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
@@ -21,8 +21,6 @@
           type="text"
           name="username"
           id="simpleUsername"
-          minlength="6"
-          pattern="[A-Za-z][A-Za-z0-9]{5,}"
           placeholder="Username"
           required
         />
@@ -30,22 +28,19 @@
           type="password"
           name="password"
           id="simplePassword"
-          minlength="8"
-          maxlength="14"
           placeholder="Password"
           required
         />
         <select name="type" id="simpleType" required>
           <option value="Simple User">Simple User</option>
           <option value="Band User">Band User</option>
+          <option value="Admin User">Admin</option>
         </select>
         <div id="messagebox"></div>
-        <button class="submitbtton" type="submit">
-          Login
-        </button>
+        <button class="submitbtton" type="submit">Login</button>
 
         <!-- Guest Login Button -->
-        <button class="guestButton" type="submit" onclick=guestLogin()>
+        <button class="guestButton" type="submit" onclick="guestLogin()">
           Login as Guest
         </button>
       </form>
@@ -55,8 +50,6 @@
           type="text"
           name="username"
           id="bandUsername"
-          minlength="6"
-          pattern="[A-Za-z][A-Za-z0-9]{5,}"
           placeholder="Band username"
           required
         />
@@ -64,19 +57,39 @@
           type="password"
           name="password"
           id="bandPassword"
-          minlength="8"
-          maxlength="14"
           placeholder="Password"
           required
         />
         <select name="type" id="bandType" required>
           <option value="Simple User">Simple User</option>
           <option value="Band User">Band User</option>
+          <option value="Admin User">Admin</option>
         </select>
         <div id="bandmessagebox"></div>
-        <button class="submitbtton" type="submit">
-          Login
-        </button>
+        <button class="submitbtton" type="submit">Login</button>
+      </form>
+      <form id="AdminUserForm">
+        <input
+          type="text"
+          name="username"
+          id="adminUsername"
+          placeholder="Admin username"
+          required
+        />
+        <input
+          type="password"
+          name="password"
+          id="adminPassword"
+          placeholder="Password"
+          required
+        />
+        <select name="type" id="adminType" required>
+          <option value="Simple User">Simple User</option>
+          <option value="Band User">Band User</option>
+          <option value="Admin User">Admin</option>
+        </select>
+        <div id="adminmessagebox"></div>
+        <button class="submitbtton" type="submit">Login</button>
       </form>
       <p>Don't have an account? <a href="./register.html">Register</a></p>
     </div>
@@ -84,22 +97,30 @@
   <script>
     let simpleType = document.getElementById("simpleType");
     let bandType = document.getElementById("bandType");
+    let adminType = document.getElementById("adminType");
 
     function updateForms(value) {
       simpleType.value = value; // keep them in sync
       bandType.value = value; // keep them in sync
-
-      if (value === "Band User") {
+      adminType.value = value; // keep them in sync
+      if (value === "Admin User") {
+        document.body.style.backgroundColor = "#D02752";
+        document.getElementById("AdminUserForm").style.display = "block";
+        document.getElementById("BandUserForm").style.display = "none";
+        document.getElementById("SimpleUserForm").style.display = "none";
+      } else if (value === "Band User") {
         document.body.style.backgroundColor = "#f79fceff";
         document.getElementById("BandUserForm").style.display = "block";
         document.getElementById("SimpleUserForm").style.display = "none";
+        document.getElementById("AdminUserForm").style.display = "none";
       } else {
         document.body.style.backgroundColor = "#adf8db";
         document.getElementById("BandUserForm").style.display = "none";
         document.getElementById("SimpleUserForm").style.display = "block";
+        document.getElementById("AdminUserForm").style.display = "none";
       }
     }
-    
+
     // Event listeners
     simpleType.onchange = function () {
       updateForms(this.value);
@@ -108,7 +129,11 @@
     bandType.onchange = function () {
       updateForms(this.value);
     };
-    
+
+    adminType.onchange = function () {
+      updateForms(this.value);
+    };
+
     // Initialize forms
     updateForms("Simple User");
   </script>

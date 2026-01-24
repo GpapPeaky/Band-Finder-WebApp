@@ -1,5 +1,5 @@
 const mysql = require("mysql2/promise");
-const { getConnection } = require("./dbConfig"); 
+const { getConnection } = require("./dbConfig");
 const { getUserByCredentials } = require("./databaseQueriesUsers");
 const { usernameExists } = require("./databaseQueriesBoth");
 
@@ -28,7 +28,7 @@ async function getBandIdByName(band_name) {
 
     const [rows] = await conn.query(
       "SELECT band_id FROM bands WHERE band_name = ?",
-      [band_name]
+      [band_name],
     );
 
     if (rows.length === 0) {
@@ -119,12 +119,12 @@ async function bandExists(band_name) {
   let conn;
   try {
     conn = await getConnection();
-    
+
     const [bandsResult] = await conn.query(
-      'SELECT band_name FROM bands WHERE band_name = ?',
-      [band_name]
+      "SELECT band_name FROM bands WHERE band_name = ?",
+      [band_name],
     );
-    
+
     return bandsResult.length > 0;
   } catch (err) {
     console.error("Error checking band:", err);
@@ -150,7 +150,7 @@ async function getBandsAtDate(date) {
       JOIN bands b ON pe.band_id = b.band_id
       WHERE DATE(pe.event_datetime) = ?
       `,
-      [date]
+      [date],
     );
 
     return bands;
@@ -179,12 +179,15 @@ async function getBandsByPublicEventType(event_type) {
       JOIN bands b ON pe.band_id = b.band_id
       WHERE pe.event_type = ?
       `,
-      [event_type]
+      [event_type],
     );
 
     return bands;
   } catch (err) {
-    console.error("Error getting bands playing at a specific type of event: ", err);
+    console.error(
+      "Error getting bands playing at a specific type of event: ",
+      err,
+    );
     throw err;
   } finally {
     if (conn) {
@@ -207,7 +210,7 @@ async function getBandsByPublicEventPrice(price) {
       JOIN bands b ON pe.band_id = b.band_id
       WHERE pe.price < ?
       `,
-      [price]
+      [price],
     );
 
     return bands;
@@ -222,8 +225,8 @@ async function getBandsByPublicEventPrice(price) {
 }
 
 // Create a new available slot, reject a pending private event request from user
-// Private events created from here have a status set to available, for users to 
-// request the band at that specific date, else they can't 
+// Private events created from here have a status set to available, for users to
+// request the band at that specific date, else they can't
 async function setBandAvailability(band_name, date) {
   let conn;
   try {
@@ -239,7 +242,7 @@ async function setBandAvailability(band_name, date) {
         AND status = 'available'
         AND event_type = 'availability'
       `,
-      [band_id, date]
+      [band_id, date],
     );
 
     if (exists.length > 0) {
@@ -251,10 +254,26 @@ async function setBandAvailability(band_name, date) {
       INSERT INTO private_events (band_id, status, event_type, event_datetime)
       VALUES (?, 'available', 'availability', ?)
       `,
-      [band_id, date]
+      [band_id, date],
     );
   } finally {
     if (conn) await conn.end();
+  }
+}
+async function getAllBands() {
+  let conn;
+  try {
+    conn = await getConnection();
+    const [rows] = await conn.query(
+      "SELECT band_name, email ,music_genres, band_description,band_city, telephone, webpage FROM bands",
+    );
+    return rows;
+  } catch (err) {
+    throw new Error("DB error: " + err.message);
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
   }
 }
 async function removeBandAvailability(band_name, date) {
@@ -271,7 +290,7 @@ async function removeBandAvailability(band_name, date) {
         AND status = 'available'
         AND event_type = 'availability'
       `,
-      [band_id, date]
+      [band_id, date],
     );
 
     if (result.affectedRows === 0) {
@@ -281,7 +300,6 @@ async function removeBandAvailability(band_name, date) {
     if (conn) await conn.end();
   }
 }
-
 
 async function getBandAvailability(band_name) {
   let conn;
@@ -300,7 +318,7 @@ async function getBandAvailability(band_name) {
         AND status = 'available'
       ORDER BY event_datetime ASC
       `,
-      [band_id]
+      [band_id],
     );
 
     return rows;
@@ -311,17 +329,32 @@ async function getBandAvailability(band_name) {
   }
 }
 
-async function requestBandForEvent(user_id, band_name, date, event_type, event_description, event_city, event_address) {
+async function requestBandForEvent(
+  user_id,
+  band_name,
+  date,
+  event_type,
+  event_description,
+  event_city,
+  event_address,
+) {
   const band_Id = await getBandIdByName(band_name);
 
-  
   // check if the private event of that date and band_id has status -> available and event_type availability
   // if yes post to it the new data
   // else throw error and fuck off.
   const valid = await checkIfBandAvailableAtDate(band_Id, date);
-  
-  if(valid){
-    await createPrivateEvent(user_id, band_Id, date, event_type, event_description, event_city, event_address);
+
+  if (valid) {
+    await createPrivateEvent(
+      user_id,
+      band_Id,
+      date,
+      event_type,
+      event_description,
+      event_city,
+      event_address,
+    );
   }
 
   return valid;
@@ -334,7 +367,7 @@ async function createPrivateEvent(
   event_type,
   event_description,
   event_city,
-  event_address
+  event_address,
 ) {
   let conn;
 
@@ -352,7 +385,7 @@ async function createPrivateEvent(
         AND status = 'available'
         AND event_type = 'availability'
       `,
-      [band_Id, date]
+      [band_Id, date],
     );
 
     if (events.length === 0) {
@@ -381,8 +414,8 @@ async function createPrivateEvent(
         event_description,
         event_city,
         event_address,
-        private_event_id
-      ]
+        private_event_id,
+      ],
     );
 
     return private_event_id;
@@ -405,10 +438,10 @@ async function getBandsPerCity() {
       GROUP BY band_city
       ORDER BY band_count DESC
       `,
-      []
+      [],
     );
     return bandCount_City_Pairs;
-  } catch(err) {
+  } catch (err) {
     throw new Error("DB error: " + err.message);
   } finally {
     if (conn) {
@@ -417,10 +450,20 @@ async function getBandsPerCity() {
   }
 }
 
-
-module.exports = { getAllBands, getBandByCredentials, updateBand,
+module.exports = {
+  getAllBands,
+  getBandByCredentials,
+  updateBand,
   getBandIdByName,
-  deleteBand ,bandExists, getBandsAtDate, setBandAvailability,
-  removeBandAvailability, getBandsPerCity, requestBandForEvent,
-  getBandsByPublicEventType, getBandsByPublicEventPrice, getBandAvailability
- };
+  deleteBand,
+  bandExists,
+  getBandsAtDate,
+  setBandAvailability,
+  removeBandAvailability,
+  getBandsPerCity,
+  requestBandForEvent,
+  getBandsByPublicEventType,
+  getBandsByPublicEventPrice,
+  getBandAvailability,
+  getAllBands,
+};

@@ -59,7 +59,7 @@ async function checkIfBand(username, password) {
  * Gets a JSON with "username" "password"
  * Returns {success: true/false, message, band}
  */
-router.get(
+router.post(
   "/details",
   requireBody(["username", "password"]),
   async (req, res) => {

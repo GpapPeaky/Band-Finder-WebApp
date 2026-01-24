@@ -1,9 +1,15 @@
 async function checkLogin(type, username, password, messageBox) {
   try {
     // Make API call to your backend
-    const typeOfConnection =
-      type === "band" ? "/band/details" : "/user/details";
+    let typeOfConnection;
 
+    if (type === "band") {
+      typeOfConnection = "/band/details";
+    } else if (type === "user") {
+      typeOfConnection = "/user/details";
+    } else {
+      typeOfConnection = "/admin/details";
+    }
     // This needs to be in the body and NOT the query
     const response = await fetch(typeOfConnection, {
       method: "POST",
