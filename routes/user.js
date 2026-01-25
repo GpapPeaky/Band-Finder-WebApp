@@ -224,7 +224,7 @@ router.put(
  * Gets a JSON with "username" , "password" (of the user), "band_name"
  * Returns {success: true/false , message, dates[]}
  */
-router.get(
+router.post(
   "/seeAvailability/",
   requireBody(["username", "password", "band_name"]),
   async (req, res) => {
