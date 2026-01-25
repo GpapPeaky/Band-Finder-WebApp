@@ -1,9 +1,3 @@
-ADMIN:
-    indexAdmin.html:
-        One page with all the required stuff for quering.
-        
-        Use pie charts for general info and stats
-
 USER:
     MODE 2 Private event requests:  
         When clicking at an available spot we send a request immidiately

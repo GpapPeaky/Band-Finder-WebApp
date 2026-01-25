@@ -379,7 +379,12 @@
 
             if (r.status === "to be done") {
                 const button = document.createElement("button");
+                button.classList.add(`butt`)
                 button.textContent = "Messages";
+
+                button.addEventListener('click', () =>
+                  window.location.href = "/messageIndexBumAss.html"  
+                );
                 
                 const br = document.createElement("br");
                 li.appendChild(button);
