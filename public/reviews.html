@@ -43,7 +43,7 @@
     
         <br><br>
     
-        <button type="submit">Submit Review</button>
+        <button type="submit" onclick="">Submit Review</button>
     </form>
     </div>
     
@@ -98,7 +98,6 @@
         fetchBandReviews();
     }
 
-    <!-- Filter -->
     document.getElementById("title2").textContent =
         bandName ? `${bandName} Public Events` : "Band Public Events";
     
@@ -141,6 +140,13 @@
     if (bandName) {
         fetchBandPublicEvents();
     }
+
+    const reviewForm = document.getElementById("review_form");
+
+    reviewForm.addEventListener("submit", (e) => {
+    e.preventDefault(); // stop page reload
+    sendReview(bandName);
+    });
     </script>
   </div>
 </body>
