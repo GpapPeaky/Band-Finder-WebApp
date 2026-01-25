@@ -316,6 +316,7 @@ async function getBandAvailability(band_name) {
         status
       FROM private_events
       WHERE band_id = ?
+      AND status != 'completed'
       ORDER BY event_datetime ASC
       `,
       [band_id],
