@@ -7,6 +7,15 @@
   <link rel="stylesheet" href="./CSS/navigation.css">
   <link rel="stylesheet" href="./CSS/reviewCards.css">
   <link rel="stylesheet" href="./CSS/publicEventCards.css">
+  <link rel="stylesheet" href="./CSS/osm.css">
+
+  <!-- OSM -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
 
   <style>
     textarea {
@@ -56,7 +65,28 @@
     <h1 id="title2"></h1>
     <ul id="public_events_list" class="publicEvent-list"></ul>
 
+    <footer id="mapFooter">
+    <h3>Event Locations</h3>
+    <div id="eventsMap"></div>
+    </footer>
+
     <script>
+    // OSM init
+    let map;
+    let markersLayer;
+    
+    function initMap() {
+        map = L.map("eventsMap").setView([0, 0], 2);
+        
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap contributors",
+        }).addTo(map);
+        
+        markersLayer = L.layerGroup().addTo(map);
+    }
+
+    initMap();
+
     const params = new URLSearchParams(window.location.search);
     const bandName = params.get("band");
     const frag = window.location.hash;
@@ -122,25 +152,44 @@
         }
 
         const id = bandID;
+        const bounds = []; // Map bounds
     
         data.events.forEach(r => {
-        const li = document.createElement("li");
-
-        // Show ONLY published events
-        if (r.band_id == id) {
-            li.innerHTML = `
-            <h3><i>${r.event_type}</i></h3>
-            <p><strong>${r.event_city}</strong></p>
-            <p class="desc"> ${r.event_address}</p>
-            <p class="desc">${r.event_datetime}</p>
-            <p class="desc">${r.event_description || ""}</p>
-            <p class="desc">${r.participants_price || ""}</p>
-            `;
-            li.classList.add("publicEvent-card");
-        }
+            const li = document.createElement("li");
     
-        list.appendChild(li);
+            // Show ONLY published events
+            if (r.band_id == id) {
+                li.innerHTML = `
+                <h3><i>${r.event_type}</i></h3>
+                <p><strong>${r.event_city}</strong></p>
+                <p class="desc"> ${r.event_address}</p>
+                <p class="desc">${r.event_datetime}</p>
+                <p class="desc">${r.event_description || ""}</p>
+                <p class="desc">${r.participants_price || ""}</p>
+                `;
+                li.classList.add("publicEvent-card");
+            }
+        
+            list.appendChild(li);
+
+            // --- MAP MARKER ---
+            if (r.band_id == id && r.event_lat && r.event_lon) {
+                const marker = L.marker([r.event_lat, r.event_lon])
+                .bindPopup(`
+                    <strong>${r.event_type}</strong><br>
+                    ${r.event_city}<br>
+                    ${r.event_datetime}
+                `);
+        
+                markersLayer.addLayer(marker);
+                bounds.push([r.event_lat, r.event_lon]);
+            }
         });
+
+        // Auto-zoom to markers
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [30, 30] });
+        }
     }
     
     if (bandName) {
@@ -150,8 +199,8 @@
     const reviewForm = document.getElementById("review_form");
 
     reviewForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // stop page reload
-    sendReview(bandName);
+        e.preventDefault(); // stop page reload
+        sendReview(bandName);
     });
     </script>
   </div>

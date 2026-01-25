@@ -40,7 +40,7 @@ USER:
             MODE 1 Change credentials:
                 User will be allowed to change his credentials
 
-            MODE 2 Private event requests:
+            MODE 2 Private event requests:  
                 SubMode 1: // Requests
                     User will provide info to a band (via name)
                     to request a private event.
