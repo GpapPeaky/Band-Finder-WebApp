@@ -312,10 +312,10 @@ async function getBandAvailability(band_name) {
       `
       SELECT 
         private_event_id,
-        event_datetime
+        event_datetime,
+        status
       FROM private_events
       WHERE band_id = ?
-        AND status = 'available'
       ORDER BY event_datetime ASC
       `,
       [band_id],
