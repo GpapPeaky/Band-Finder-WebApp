@@ -25,4 +25,26 @@ async function checkIfLoggedInAsAdmin(username, password) {
   }
 }
 
-module.exports = { checkIfLoggedInAsAdmin };
+async function getPendingReviews() {
+  let conn;
+  try{
+    conn =  await getConnection();
+
+    const selectQuery = `
+      SELECT *
+      FROM reviews
+      WHERE status = 'pending'
+    `;
+
+    const [rows] = await conn.execute(selectQuery);
+
+    return rows
+  }catch(err){
+    throw new Error("DB error:"+ err.message)
+  }finally{
+    if(conn){
+      await conn.end();
+    }
+  }
+}
+module.exports = { checkIfLoggedInAsAdmin ,getPendingReviews};

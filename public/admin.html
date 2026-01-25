@@ -9,34 +9,72 @@
     />
     <meta name="keywords" content="csd, personal, website, hy359" />
     <meta name="author" content="Apostolakis Giorgos" />
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <style>
+      body {
+        background-color: #d02752;
+      }
+
+      .remove-user {
+        background-color: #ff4d4d;
+        color: white;
+        margin: 10px 0px;
+      }
+
+      #removeUsername {
+        margin: 10px 0px 0px 0px;
+      }
+
+      .section {
+        margin-bottom: 40px;
+      }
+    </style>
   </head>
   <body>
-    <!-- ==================== SIMPLE USER REGISTRATION FORM ==================== -->
-    <div class="section">
-      <h2>Remove User</h2>
-      <input type="text" id="removeUsername" placeholder="Username to remove" />
-      <button onclick="removeUser()">Remove User</button>
-      <div id="removeResult"></div>
+    <div class="container">
+      <h1 style="color: white">Admin Dashboard</h1>
+
+      <!-- Remove User Section -->
+      <div class="section">
+        <h2>Remove User</h2>
+        <input
+          type="text"
+          id="removeUsername"
+          placeholder="Username to remove"
+        />
+        <button onclick="removeUser()" class="remove-user">Remove User</button>
+        <div id="removeResult"></div>
+      </div>
+
+      <!-- Review Management Section -->
+      <div class="section">
+        <h2>Review Management</h2>
+        <p style="color: white; margin-bottom: 15px">Manage pending reviews</p>
+        <div id="review_list"></div>
+      </div>  
+
+      <!-- Logout -->
+      <a
+        class="logout"
+        onclick="logout()"
+        style="
+          cursor: pointer;
+          display: block;
+          width: fit-content;
+          margin: 20px auto 0 auto;
+          color: rgb(9, 173, 255);
+          text-decoration: underline;
+          font-size: 16px;
+        "
+      >
+        Logout
+      </a>
     </div>
-    <!-- LOGOUT -->
-    <button
-      onclick="logout()"
-      style="
-        margin: 20px 0;
-        padding: 10px 20px;
-        cursor: pointer;
-        background: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 5px;
-      "
-    >
-      Logout
-    </button>
+
+    <!-- Import authentication system -->
+    <script src="./JS/loginCheck.js"></script>
+    <script src="./JS/admin.js"></script>
   </body>
-  
-  <!-- Import authentication system -->
-  <script src="./JS/loginCheck.js"></script>
   <script>
     async function removeUser() {
       const username = document.getElementById("removeUsername").value;

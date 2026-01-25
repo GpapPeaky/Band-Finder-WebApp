@@ -4,7 +4,7 @@ const router = express.Router();
 const { modifyReview, deleteReview } = require("../databaseInsert");
 const { deleteUser } = require("../databaseQueriesUsers");
 
-const { checkIfLoggedInAsAdmin } = require("../databaseQueriesAdmin");
+const { checkIfLoggedInAsAdmin , getPendingReviews } = require("../databaseQueriesAdmin");
 
 const { getBandsPerCity } = require("../databaseQueriesBands");
 const {
@@ -75,10 +75,35 @@ router.post(
       return res.json({
         success: true,
         message: "Admin credentials are valid",
+        user:{
+          username:req.body.username,
+          password: req.body.password
+        }
       });
     }
   },
 );
+
+router.post(
+  "/getReviews",
+  requireBody(["username", "password"]),
+  async (req, res) => {
+    console.log("/admin/getReviews endpoint hit");
+    if (!(await checkIfAdmin(req.body.username, req.body.password))) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized: Admin credentials are invalid",
+      });
+    }
+    const reviews = await getPendingReviews();
+
+    return res.json({
+      success: true,
+      message: "Pending reviews retrieved successfully",
+      reviews: reviews,
+    });
+  }
+)
 /**
  *  Admin removes a user by username
  *  Gets a JSON with "username" "password" (of the admin)
