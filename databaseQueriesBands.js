@@ -335,7 +335,6 @@ async function updateBand(
     `;
 
     const [result] = await conn.execute(updateQuery, [
-      username,
       password,
       band_city,
       band_description,
@@ -347,6 +346,7 @@ async function updateBand(
       photo,
       telephone,
       webpage,
+      username
     ]);
 
     if (result.affectedRows === 0) {

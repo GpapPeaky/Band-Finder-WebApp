@@ -260,6 +260,8 @@ router.post(
   async (req, res) => {
     console.log("/band/updateBand endpoint hit");
 
+     const data = req.body;
+     
     try {
       const telephoneTaken = await phoneExistsSimpleForother(
         data.username,
