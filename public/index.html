@@ -96,46 +96,144 @@
     <script src="./JS/loginCheck.js"></script>
   </body>
   <script>
-    let simpleType = document.getElementById("simpleType");
-    let bandType = document.getElementById("bandType");
-    let adminType = document.getElementById("adminType");
-
-    function updateForms(value) {
-      simpleType.value = value; // keep them in sync
-      bandType.value = value; // keep them in sync
-      adminType.value = value; // keep them in sync
-      if (value === "Admin User") {
-        document.body.style.backgroundColor = "#D02752";
-        document.getElementById("AdminUserForm").style.display = "block";
-        document.getElementById("BandUserForm").style.display = "none";
-        document.getElementById("SimpleUserForm").style.display = "none";
-      } else if (value === "Band User") {
-        document.body.style.backgroundColor = "#f79fceff";
-        document.getElementById("BandUserForm").style.display = "block";
-        document.getElementById("SimpleUserForm").style.display = "none";
-        document.getElementById("AdminUserForm").style.display = "none";
-      } else {
-        document.body.style.backgroundColor = "#adf8db";
-        document.getElementById("BandUserForm").style.display = "none";
-        document.getElementById("SimpleUserForm").style.display = "block";
-        document.getElementById("AdminUserForm").style.display = "none";
+    // ----------------------------------------------------------------
+    // CONFIGURATION
+    // ----------------------------------------------------------------
+    const THEME_COLORS = {
+      "Simple User": "#adf8db",    // Light green
+      "Band User": "#f79fceff",    // Pink
+      "Admin User": "#D02752"      // Dark red
+    };
+    
+    const DEBUG_UI = true; // Set to false to disable UI debug logs
+    
+    // ----------------------------------------------------------------
+    // HELPER FUNCTIONS
+    // ----------------------------------------------------------------
+    
+    /**
+     * Debug logger for UI changes
+     */
+    function debugUI(...args) {
+      if (DEBUG_UI) {
+        console.log("[UI DEBUG]", ...args);
       }
     }
-
-    // Event listeners
-    simpleType.onchange = function () {
-      updateForms(this.value);
-    };
-
-    bandType.onchange = function () {
-      updateForms(this.value);
-    };
-
-    adminType.onchange = function () {
-      updateForms(this.value);
-    };
-
-    // Initialize forms
-    updateForms("Simple User");
+    
+    /**
+     * Get references to all form type selectors
+     */
+    function getTypeSelectors() {
+      return {
+        simple: document.getElementById("simpleType"),
+        band: document.getElementById("bandType"),
+        admin: document.getElementById("adminType")
+      };
+    }
+    
+    /**
+     * Get references to all login forms
+     */
+    function getForms() {
+      return {
+        simple: document.getElementById("SimpleUserForm"),
+        band: document.getElementById("BandUserForm"),
+        admin: document.getElementById("AdminUserForm")
+      };
+    }
+    
+    // ----------------------------------------------------------------
+    // FORM SWITCHING
+    // ----------------------------------------------------------------
+    
+    /**
+     * Update the visible form and theme based on selected user type
+     * @param {string} userType - Selected user type
+     */
+    function updateForms(userType) {
+      debugUI("Switching to user type:", userType);
+      
+      // Synchronize all dropdowns
+      const selectors = getTypeSelectors();
+      selectors.simple.value = userType;
+      selectors.band.value = userType;
+      selectors.admin.value = userType;
+      
+      // Get form elements
+      const forms = getForms();
+      
+      // Update theme color
+      const bgColor = THEME_COLORS[userType] || THEME_COLORS["Simple User"];
+      document.body.style.backgroundColor = bgColor;
+      debugUI("Background color changed to:", bgColor);
+      
+      // Show/hide appropriate form
+      switch (userType) {
+        case "Admin User":
+          forms.admin.style.display = "block";
+          forms.band.style.display = "none";
+          forms.simple.style.display = "none";
+          debugUI("Showing Admin form");
+          break;
+          
+        case "Band User":
+          forms.band.style.display = "block";
+          forms.simple.style.display = "none";
+          forms.admin.style.display = "none";
+          debugUI("Showing Band form");
+          break;
+          
+        case "Simple User":
+        default:
+          forms.simple.style.display = "block";
+          forms.band.style.display = "none";
+          forms.admin.style.display = "none";
+          debugUI("Showing Simple User form");
+          break;
+      }
+    }
+    
+    // ----------------------------------------------------------------
+    // INITIALIZATION
+    // ----------------------------------------------------------------
+    
+    /**
+     * Set up event listeners for form type changes
+     */
+    function initializeFormSwitching() {
+      debugUI("Initializing form switching");
+      
+      const selectors = getTypeSelectors();
+      
+      // Attach change event listeners to all dropdowns
+      selectors.simple.onchange = function () {
+        debugUI("Simple form dropdown changed to:", this.value);
+        updateForms(this.value);
+      };
+      
+      selectors.band.onchange = function () {
+        debugUI("Band form dropdown changed to:", this.value);
+        updateForms(this.value);
+      };
+      
+      selectors.admin.onchange = function () {
+        debugUI("Admin form dropdown changed to:", this.value);
+        updateForms(this.value);
+      };
+      
+      // Initialize with Simple User form
+      updateForms("Simple User");
+      debugUI("Form switching initialized successfully");
+    }
+    
+    // Run initialization when DOM is ready
+    // Note: loginCheck.js also has a DOMContentLoaded listener
+    // Both will run independently without conflicts
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initializeFormSwitching);
+    } else {
+      // DOM already loaded
+      initializeFormSwitching();
+    }
   </script>
 </html>

@@ -138,11 +138,16 @@ async function deleteUser(username) {
       DELETE FROM users
       WHERE username = ?
     `;
-
+    const deleteSecondaryQuery = `
+      DELETE FROM bands
+      WHERE username = ?
+    `;
     const [result] = await conn.execute(deleteQuery, [username]);
 
     if (result.affectedRows === 0) {
-      return "No user found with that username.";
+      const [secondaryResult] = await conn.execute(deleteSecondaryQuery, [username]);
+      if (secondaryResult.affectedRows === 0)
+        return "No user found with that username.";
     }
 
     return "User deleted successfully.";

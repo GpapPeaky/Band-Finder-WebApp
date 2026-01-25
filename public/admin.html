@@ -1,0 +1,30 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>ADMIN</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="This is a website about the third assignment of hy 359..."
+    />
+    <meta name="keywords" content="csd, personal, website, hy359" />
+    <meta name="author" content="Apostolakis Giorgos" />
+  </head>
+  <body>
+    <!-- ==================== SIMPLE USER REGISTRATION FORM ==================== -->
+    <div class="section">
+      <h2>Remove User</h2>
+      <input type="text" id="removeUsername" placeholder="Username to remove" />
+      <button onclick="removeUser()">Remove User</button>
+      <div id="removeResult"></div>
+    </div>
+  </body>
+  <script>
+    async function removeUser() {
+      const username = document.getElementById("removeUsername").value;
+      const resultDiv = document.getElementById("removeResult");
+
+      // api call /admin/remove-user/:username + BODY {admin credentials from session}
+    }
+  </script>
+</html>

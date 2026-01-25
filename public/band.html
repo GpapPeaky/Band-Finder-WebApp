@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+  <!-- ========================================================================
+       BAND.HTML | BAND USER DASHBOARD
+       Protected page for authenticated band users
+  ========================================================================= -->
+  <head>
+    <meta charset="UTF-8" />
+    <title>Band Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Band user dashboard - manage your profile and events"
+    />
+    <meta name="keywords" content="csd, personal, website, hy359, band" />
+    <meta name="author" content="Apostolakis Giorgos" />
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <link rel="stylesheet" href="./CSS/navigation.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1 id="welcomeMessage">Loading...</h1>
+      <div id="bandInfo"></div>
+      <button onclick="logout()" style="margin: 20px 0; padding: 10px 20px; cursor: pointer; background: #dc3545; color: white; border: none; border-radius: 5px;">
+        Logout
+      </button>
+      <!-- Add your band dashboard content here -->
+    </div>
+  </body>
+  
+  <!-- Import authentication system -->
+  <script src="./JS/loginCheck.js"></script>
+  
+  <script>
+    // ----------------------------------------------------------------
+    // BAND PAGE INITIALIZATION
+    // ----------------------------------------------------------------
+    
+    const DEBUG_BAND = true;
+    
+    function debugBand(...args) {
+      if (DEBUG_BAND) {
+        console.log("[BAND PAGE]", ...args);
+      }
+    }
+    
+    debugBand("Band page script running");
+    
+    // Wait for DOM to be ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBandPage);
+    } else {
+      initBandPage();
+    }
+    
+    function initBandPage() {
+      debugBand("Initializing band page");
+      
+      // Check if user is logged in
+      const session = checkSession();
+      
+      if (!session) {
+        debugBand("No session found, redirecting to login");
+        alert("You must login first!");
+        window.location.href = "index.html";
+        return;
+      }
+      
+      if (session.userType !== "band") {
+        debugBand("Wrong user type:", session.userType);
+        alert("Access denied. This page is for band users only.");
+        window.location.href = "index.html";
+        return;
+      }
+      
+      debugBand("Session valid for band user:", session.user.username);
+      
+      // Display band information
+      const welcomeEl = document.getElementById("welcomeMessage");
+      const bandInfoEl = document.getElementById("bandInfo");
+      
+      const bandData = session.user;
+      
+      welcomeEl.textContent = `Welcome ${bandData.band_name || bandData.username}!`;
+      
+      // Display band details
+      bandInfoEl.innerHTML = `
+        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h2>Band Information</h2>
+          <p><strong>Username:</strong> ${bandData.username}</p>
+          <p><strong>Band Name:</strong> ${bandData.band_name || 'N/A'}</p>
+          <p><strong>Email:</strong> ${bandData.email}</p>
+          <p><strong>Genres:</strong> ${bandData.music_genres || 'N/A'}</p>
+          <p><strong>Members:</strong> ${bandData.members_number || 'N/A'}</p>
+          <p><strong>Founded:</strong> ${bandData.foundedYear || 'N/A'}</p>
+          <p><strong>City:</strong> ${bandData.band_city || 'N/A'}</p>
+          <p><strong>Phone:</strong> ${bandData.telephone || 'N/A'}</p>
+          ${bandData.webpage ? `<p><strong>Website:</strong> <a href="${bandData.webpage}" target="_blank">${bandData.webpage}</a></p>` : ''}
+          <p><strong>Description:</strong> ${bandData.band_description || 'N/A'}</p>
+        </div>
+      `;
+      
+      debugBand("Band page initialized successfully");
+    }
+  </script>
+</html>
