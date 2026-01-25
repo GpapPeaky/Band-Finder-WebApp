@@ -18,7 +18,25 @@
       <button onclick="removeUser()">Remove User</button>
       <div id="removeResult"></div>
     </div>
+    <!-- LOGOUT -->
+    <button
+      onclick="logout()"
+      style="
+        margin: 20px 0;
+        padding: 10px 20px;
+        cursor: pointer;
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+      "
+    >
+      Logout
+    </button>
   </body>
+  
+  <!-- Import authentication system -->
+  <script src="./JS/loginCheck.js"></script>
   <script>
     async function removeUser() {
       const username = document.getElementById("removeUsername").value;
