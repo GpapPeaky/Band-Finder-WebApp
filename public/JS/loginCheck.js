@@ -47,7 +47,7 @@ function checkSession() {
   
   // Validate all required data exists
   if (!user || !userType || !loginTime || user === "undefined") {
-    debug("❌ Session check failed: Missing data");
+    debug("Session check failed: Missing data");
     debug("============ CHECK SESSION END (FAILED) ============");
     return null;
   }
@@ -63,15 +63,16 @@ function checkSession() {
   debug("- Session duration:", SESSION_DURATION, "ms");
   
   if (timeElapsed > SESSION_DURATION) {
-    debug("❌ Session expired");
+    debug("Session expired");
     logout();
+    debug("============ CHECK SESSION END (FAILED) ============");
     return null;
   }
   
   // Parse user data
   try {
     const userData = JSON.parse(user);
-    debug("✅ Session valid!");
+    debug("Session valid!");
     debug("- User type:", userType);
     debug("- Username:", userData.username);
     debug("- Parsed user data:", userData);
@@ -82,7 +83,8 @@ function checkSession() {
       userType: userType,
     };
   } catch (error) {
-    debug("❌ Session check failed: Parse error", error);
+    debug("Session check failed: Parse error", error);
+    debug("============ CHECK SESSION END (FAILED) ============");
     logout();
     return null;
   }
@@ -166,11 +168,9 @@ async function checkLogin(type, username, password, messageBox) {
     
     // Parse successful response
     const result = await response.json();
-    debug("✅ Login API response received:");
+    debug("Login API response received:");
     debug("Full response:", result);
     
-    // CRITICAL: Extract user data based on response structure
-    // Different endpoints return data with different keys
     let userData;
     
     if (type === "band" && result.band) {
@@ -185,14 +185,14 @@ async function checkLogin(type, username, password, messageBox) {
     } else {
       // Fallback: use the entire result if no specific key found
       userData = result;
-      debug("⚠️ No user/band/admin key found, using entire response");
+      debug("No user/band/admin key found, using entire response");
     }
     
     debug("User data to store:", userData);
     
     // Validate we have actual data
     if (!userData || typeof userData !== 'object') {
-      console.error("❌ CRITICAL: No valid user data in API response!");
+      console.error("CRITICAL: No valid user data in API response!");
       console.error("Response was:", result);
       throw new Error("Invalid response from server - no user data");
     }
@@ -221,16 +221,16 @@ async function checkLogin(type, username, password, messageBox) {
     
     // Check if storage worked
     if (!storedUser || !storedType || !storedTime) {
-      console.error("❌❌❌ CRITICAL ERROR: localStorage.setItem FAILED!");
+      console.error("CRITICAL ERROR: localStorage.setItem FAILED!");
       console.error("Browser may be blocking localStorage");
       alert("Error: Unable to save login session. Please check browser settings.");
       return false;
     }
     
-    debug("✅ Storage verification passed!");
+    debug("Storage verification passed!");
     
     // Show success message
-    showMessage(messageBox, "Login successful! Redirecting...", true);
+    showMessage(messageBox, "Login successful!", true);
     
     // Determine redirect URL
     let redirectUrl;
@@ -260,7 +260,7 @@ async function checkLogin(type, username, password, messageBox) {
     return true;
     
   } catch (error) {
-    debug("❌ Login error:", error);
+    debug("Login error:", error);
     debug("============ LOGIN END (FAILED) ============");
     showMessage(messageBox, error.message, false);
     return false;
@@ -313,7 +313,7 @@ async function handleLoginFormSubmit(event, formType) {
   
   // Validate input
   if (!username || !password) {
-    debug("❌ Validation failed: Empty username or password");
+    debug("Validation failed: Empty username or password");
     showMessage(messageBox, "Please enter both username and password!");
     return;
   }
@@ -364,7 +364,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (isLoginPage) {
     const storedUser = localStorage.getItem("currentUser");
     if (storedUser === "undefined") {
-      debug("⚠️ Found corrupted localStorage on login page, clearing...");
+      debug("Found corrupted localStorage on login page, clearing...");
       localStorage.clear();
     }
   }
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const session = checkSession();
   
   if (session) {
-    debug("✅ Active session found!");
+    debug("Active session found!");
     debug("Checking if we should redirect...");
     
     const currentPath = window.location.pathname;
@@ -413,7 +413,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Attach event listeners to login forms
   const simpleForm = document.getElementById("SimpleUserForm");
   if (simpleForm) {
-    debug("✅ Attaching event listener to SimpleUserForm");
+    debug("Attaching event listener to SimpleUserForm");
     simpleForm.addEventListener("submit", function (event) {
       handleLoginFormSubmit(event, "simple");
     });
@@ -421,7 +421,7 @@ document.addEventListener("DOMContentLoaded", function () {
   
   const bandForm = document.getElementById("BandUserForm");
   if (bandForm) {
-    debug("✅ Attaching event listener to BandUserForm");
+    debug("Attaching event listener to BandUserForm");
     bandForm.addEventListener("submit", function (event) {
       handleLoginFormSubmit(event, "band");
     });
@@ -429,12 +429,12 @@ document.addEventListener("DOMContentLoaded", function () {
   
   const adminForm = document.getElementById("AdminUserForm");
   if (adminForm) {
-    debug("✅ Attaching event listener to AdminUserForm");
+    debug("Attaching event listener to AdminUserForm");
     adminForm.addEventListener("submit", function (event) {
       handleLoginFormSubmit(event, "admin");
     });
   }
   
-  debug("✅ Authentication system initialized successfully");
+  debug("Authentication system initialized successfully");
   debug("============ PAGE LOAD COMPLETE ============");
 });
