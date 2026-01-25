@@ -4,10 +4,11 @@
   background: #ffffff;
   color: #101010;
   border-radius: 8px;
+  text-align: center;
 }
 
 #eventsMap {
   height: 400px;
   width: 100%;
-  border-radius: 8px;
+  border-radius: 40px;
 }

@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="./CSS/style.css" />
     <link rel="stylesheet" href="./CSS/navigation.css">
     <link rel="stylesheet" href="./CSS/bandCards.css">
+    <link rel="stylesheet" href="./CSS/bandFilter.css">
   </head>
   <body>
     <!-- Main container for simple user form -->
@@ -22,6 +23,28 @@
         <!-- When clicked, displays reviews of the band, and public events! -->
             <!-- Review info: User, Rating -->
             <!-- Public Event info: City, Address, Time, Event Type, Desc, Price -->
+        <div id="band-filters">
+          <label>
+            <input type="radio" name="filterBy" value="name" checked>
+            Band Name
+          </label>
+        
+          <label>
+            <input type="radio" name="filterBy" value="genre">
+            Music Genre
+          </label>
+        
+          <label>
+            <input type="radio" name="filterBy" value="city">
+            City
+          </label>
+        
+          <label>
+            <input type="radio" name="filterBy" value="date">
+            Date
+          </label>
+        </div>
+
         <div id = "band_list"></div>
 
         <script src="./JS/guest.js"></script>

@@ -79,3 +79,11 @@
   margin: 4px 0;
   font-size: 0.95rem;
 }
+
+.norev {
+  color: #535353;
+  margin: 20px auto;  /* auto left/right margin centers it */
+  padding: 0px;
+  font-size: 20px;
+  text-align: center; /* centers text inside the element */
+}

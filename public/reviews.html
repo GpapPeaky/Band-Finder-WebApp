@@ -64,6 +64,32 @@
     </div>
     
     <h1 id="title2"></h1>
+    <div id="public-event-filters">
+        <label>
+            <input type="radio" name="eventFilter" value="type" checked>
+            Event Type
+        </label>
+        
+        <label>
+            <input type="radio" name="eventFilter" value="city">
+            City
+        </label>
+        
+        <label>
+            <input type="radio" name="eventFilter" value="date">
+            Date
+        </label>
+        
+        <label>
+            <input type="radio" name="eventFilter" value="price">
+            Price
+        </label>
+
+        <label id = "please_kill_me">
+            <input type="radio" name="eventFilter" value="distance">
+            Distance
+        </label>
+    </div>
     <ul id="public_events_list" class="publicEvent-list"></ul>
 
     <!-- Shiii -->
@@ -77,6 +103,12 @@
     </footer>
 
     <script>
+    let allPublicEvents = [];
+
+    document.querySelectorAll('input[name="eventFilter"]').forEach(radio => {
+        radio.addEventListener("change", applyPublicEventFilter);
+    });
+
     // OSM init
     let map;
     let markersLayer;
@@ -98,6 +130,17 @@
     const frag = window.location.hash;
     const bandID = frag ? frag.substring(1) : "";
 
+    // Current user
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    let userID;
+     if (user) {
+         userID = user.user_id;
+     } else {
+        // set the distance thing to not show
+        const distanceLabel = document.getElementById("please_kill_me");
+        distanceLabel.style.display = "none"; // browser doesn't support geolocation
+     }
+
     document.getElementById("title1").textContent =
         bandName ? `${bandName} Reviews` : "Band Reviews";
     
@@ -115,7 +158,7 @@
         list.innerHTML = "";
     
         if (!data.reviews || data.reviews.length === 0) {
-            list.innerHTML = "<p>No reviews yet.</p>";
+            list.innerHTML = "<div class=\"norev\">No reviews yet.</p>";
             return;
         }
     
@@ -144,130 +187,206 @@
         bandName ? `${bandName} Public Events` : "Band Public Events";
     
     async function fetchBandPublicEvents() {
-        const res = await fetch(
-        `/general/seePublicEvents`
-        );
+        const res = await fetch(`/general/seePublicEvents`);
         const data = await res.json();
-    
+        
+        // store ONLY this band's events
+        allPublicEvents = data.events.filter(e => e.band_id == bandID);
+        
+        applyPublicEventFilter(); // initial render
+    }
+
+    let userLocation = new Object();
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth radius in km
+        const toRad = (deg) => deg * Math.PI / 180;
+        
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // distance in km
+    }
+
+    // No lat lon??
+    // HARD CODE THAT SHIT
+    userLocation.lat = "35.3406733";
+    userLocation.lon = "25.1016577";
+
+    console.log('%s, %s', userLocation.lat, userLocation.lon);
+
+    function applyPublicEventFilter() {
+        const filterBy = document.querySelector(
+            'input[name="eventFilter"]:checked'
+        ).value;
+        
+        let sorted = [...allPublicEvents];
+        
+        switch (filterBy) {
+            case "type":
+            sorted.sort((a, b) =>
+                a.event_type.localeCompare(b.event_type)
+            );
+            break;
+        
+            case "city":
+            sorted.sort((a, b) =>
+                a.event_city.localeCompare(b.event_city)
+            );
+            break;
+        
+            case "date":
+            sorted.sort((a, b) =>
+                new Date(a.event_datetime) - new Date(b.event_datetime)
+            );
+            break;
+        
+            case "price":
+            sorted.sort((a, b) =>
+                (a.participants_price || 0) - (b.participants_price || 0)
+            );
+            break;
+
+            case "distance":
+            if (userLocation) {
+                sorted.sort((a, b) => {
+                const distA = getDistanceKm(userLocation.lat, userLocation.lon, a.event_lat, a.event_lon);
+                const distB = getDistanceKm(userLocation.lat, userLocation.lon, b.event_lat, b.event_lon);
+                return distA - distB;
+                });
+            } else {
+                alert("Cannot sort by distance: user location not available.");
+            }
+            break;
+        }
+        
+        renderPublicEvents(sorted);
+    }
+
+    function renderPublicEvents(events) {
         const list = document.getElementById("public_events_list");
         list.innerHTML = "";
-    
-        if (!data.events || data.events.length === 0) {
-            list.innerHTML = "<p>No public events.</p>";
-            return;
-        }
-
-        const id = bandID;
-        const bounds = []; // Map bounds
-    
-        data.events.forEach(r => {
-            const li = document.createElement("li");
-
-            const date = new Date(decodeURIComponent(r.event_datetime));
-
-            const prettyDate = date.toLocaleString(undefined, {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-            });
-
-            // Show ONLY published events
-            if (r.band_id == id) {
-                li.innerHTML = `
-                <h3><i>${r.event_type}</i></h3>
-                <p><strong>${r.event_city}</strong></p>
-                <p class="desc"> ${r.event_address}</p>
-                <p class="desc">${prettyDate}</p>
-                <p class="desc">${r.event_description || ""}</p>
-                <p class="desc">Price: ${r.participants_price || ""}</p>
-                `;
-                li.classList.add("publicEvent-card");
-            }
         
+        const bounds = [];
+        
+        events.forEach(r => {
+            const li = document.createElement("li");
+        
+            const date = new Date(decodeURIComponent(r.event_datetime));
+            const prettyDate = date.toLocaleString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            });
+        
+            li.innerHTML = `
+            <h3><i>${r.event_type}</i></h3>
+            <p><strong>${r.event_city}</strong></p>
+            <p class="desc">${r.event_address}</p>
+            <p class="desc">${prettyDate}</p>
+            <p class="desc">${r.event_description || ""}</p>
+            <p class="desc">Price: ${r.participants_price || "Free"}</p>
+            `;
+        
+            li.classList.add("publicEvent-card");
             list.appendChild(li);
-
-            // --- MAP MARKER ---
-            if (r.band_id == id && r.event_lat && r.event_lon) {
-                const marker = L.marker([r.event_lat, r.event_lon])
+        
+            // MAP
+            if (r.event_lat && r.event_lon) {
+            const marker = L.marker([r.event_lat, r.event_lon])
                 .bindPopup(`
-                    <strong>${r.event_type}</strong><br>
-                    ${r.event_city}<br>
-                    ${r.event_datetime}
+                <strong>${r.event_type}</strong><br>
+                ${r.event_city}<br>
+                ${prettyDate}
                 `);
         
-                markersLayer.addLayer(marker);
-                bounds.push([r.event_lat, r.event_lon]);
+            markersLayer.addLayer(marker);
+            bounds.push([r.event_lat, r.event_lon]);
             }
         });
-
-        // Auto-zoom to markers
-        if (bounds.length > 0) {
+        
+        if (bounds.length) {
             map.fitBounds(bounds, { padding: [30, 30] });
         }
     }
 
     async function fetchBandAvailability() {
         const user = JSON.parse(localStorage.getItem("currentUser"));
-        const username = user.username;
-        const password = user.password;
-
+        if (!user) return console.error("No currentUser in localStorage!");
+    
+        const { username, password } = user;
+    
         document.getElementById("at").textContent =
-            bandName ? `${bandName} Public Events` : "Band Public Events";
-
+            bandName ? `${bandName} Private Events` : "Band Private Events";
+    
         const res = await fetch("/user/seeAvailability", {
             method: "POST",
-            headers: {
-            "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-                username: username,
-                password: password,
-                band_name: bandName,
-            }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password, band_name: bandName }),
         });
         
         const data = await res.json();
-        
-        // Availability list
+    
         const list = document.getElementById("availabilities");
         const listErr = document.getElementById("AvailErr");
-        listErr.innerHTML = "";
         list.innerHTML = "";
-
-        dates = data.dates;
-
-        if (dates) {
-            dates.forEach(r => {
-                const li = document.createElement("li");
-        
-                const date = new Date(decodeURIComponent(r.event_datetime));
-
-                const prettyDate = date.toLocaleString(undefined, {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                });
-
-
-                li.innerHTML = `${prettyDate}`;
-                li.classList.add("availability-card");
-            
-                list.appendChild(li);
-            });
-        } else {
+        listErr.innerHTML = "";
+    
+        const dates = data.dates || [];
+    
+        if (dates.length === 0) {
             const li = document.createElement("div");
-        
-            li.innerHTML = `Band is unavailable`;
+            li.innerHTML = "Band is unavailable";
             li.classList.add("NotAvailable");
-            
             listErr.appendChild(li);
+            return;
         }
-    }
+    
+        // Append all items without checking band_id
+        dates.forEach(r => {
+            const date = new Date(r.event_datetime);
+            const prettyDate = date.toLocaleString(undefined, {
+                year: "numeric", month: "long", day: "numeric",
+                hour: "2-digit", minute: "2-digit"
+            });
 
+            if (userID !== r.user_id ) return; // SHOW ONLY CURRENT USER'S
+
+            const status = (r.status === "to be done" ? "accepted" : r.status) || "UNKNOWN";
+            const location = (r.event_city || r.event_address)
+                ? `${r.event_city || ""} ${r.event_address || ""}`.trim()
+                : "Location not provided";
+    
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <p><strong><i>${status.toUpperCase()}</i></strong></p>
+                <p>${prettyDate}</p>
+                <p>${location}</p>
+                ${r.event_description ? `<p>${r.event_description}</p>` : ""}
+                ${r.event_type ? `<p>${r.event_type}</p>` : ""}
+                ${r.band_decision ? `<p>${r.band_decision}</p>` : ""}
+            `;
+            li.classList.add(`${status}-card`);
+            list.appendChild(li);
+
+            if (r.status === "to be done") {
+                const button = document.createElement("button");
+                button.textContent = "Messages";
+                
+                const br = document.createElement("br");
+                li.appendChild(button);
+                li.appendChild("br");
+            }
+        });
+    }
     
     if (bandName) {
         fetchBandPublicEvents();

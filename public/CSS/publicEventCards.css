@@ -45,3 +45,29 @@
 .desc {
     color: gray;
 }
+
+#public-event-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* flexible columns */
+  gap: 16px;
+  margin: 20px 0;
+
+  justify-content: center; /* centers the whole grid horizontally */
+  justify-items: center;   /* centers each label in its grid cell */
+}
+
+#public-event-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#public-event-filters label:has(input:checked) {
+  background: #eef3ff;
+  font-weight: bold;
+}
