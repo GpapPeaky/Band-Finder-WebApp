@@ -21,6 +21,7 @@ async function fetchBands() {
         <p><strong>Genre:</strong> <i> ${b.music_genres}</i></p>
         <p>${b.band_description}</p>
         <p><em>${b.band_city}</em></p>
+        <p class= "hyper">${b.webpage}</p>
     `;
 
     // Add band name and band_id to the query

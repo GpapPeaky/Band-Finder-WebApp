@@ -234,3 +234,7 @@ textarea:focus {
 .linkLogin:hover {
   text-decoration: underline;
 }
+
+.hyper {
+  color: #4c51bf;
+}
