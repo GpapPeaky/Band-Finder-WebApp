@@ -300,7 +300,70 @@ async function removeBandAvailability(band_name, date) {
     if (conn) await conn.end();
   }
 }
+async function updateBand(
+  username,
+  password,
+  band_city,
+  band_description,
+  band_name,
+  email,
+  foundedYear,
+  members_number,
+  music_genres,
+  photo,
+  telephone,
+  webpage,
+) {
+  let conn;
+  try {
+    conn = await getConnection();
+    const updateQuery = `
+      UPDATE bands
+      SET
+        password = ?,
+        band_city = ?,
+        band_description = ?,
+        band_name = ?,
+        email = ?,
+        foundedYear = ?,
+        members_number = ?,
+        music_genres = ?,
+        photo = ?,
+        telephone = ?,
+        webpage = ?
+      WHERE username = ?
+    `;
 
+    const [result] = await conn.execute(updateQuery, [
+      username,
+      password,
+      band_city,
+      band_description,
+      band_name,
+      email,
+      foundedYear,
+      members_number,
+      music_genres,
+      photo,
+      telephone,
+      webpage,
+    ]);
+
+    if (result.affectedRows === 0) {
+      return {
+        success: false,
+        message: "No band found with that username.",
+      };
+    }
+    return { success: true, message: "Band profile updated successfully." };
+  } catch (err) {
+    throw new Error("DB error: " + err.message);
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
+  }
+}
 async function getBandAvailability(band_name) {
   let conn;
 
@@ -311,9 +374,7 @@ async function getBandAvailability(band_name) {
     const [rows] = await conn.query(
       `
       SELECT 
-        private_event_id,
-        event_datetime,
-        status
+        *
       FROM private_events
       WHERE band_id = ?
       AND status != 'completed'

@@ -1,12 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const { getBandByCredentials } = require("../databaseQueriesBands");
-const { isPartOfTheEvent } = require("../databaseQueriesBoth");
+const { getBandByCredentials,updateBand } = require("../databaseQueriesBands");
+const { isPartOfTheEvent,phoneExistsSimpleForother } = require("../databaseQueriesBoth");
 const {
   updateRequest,
   deleteAvailableEvent,
-  createAvailableEvent
+  createAvailableEvent,
 } = require("../databaseQueriesEvents");
 function requireBody(fields) {
   return (req, res, next) => {
@@ -19,7 +19,7 @@ function requireBody(fields) {
 
     const missing = fields.filter(
       (f) =>
-        req.body[f] === undefined || req.body[f] === null || req.body[f] === ""
+        req.body[f] === undefined || req.body[f] === null || req.body[f] === "",
     );
 
     if (missing.length) {
@@ -36,7 +36,7 @@ function requireBody(fields) {
 function requireParams(params) {
   return (req, res, next) => {
     const missing = params.filter(
-      (p) => req.params[p] === undefined || req.params[p] === ""
+      (p) => req.params[p] === undefined || req.params[p] === "",
     );
 
     if (missing.length) {
@@ -51,7 +51,7 @@ function requireParams(params) {
 }
 async function checkIfBand(username, password) {
   return getBandByCredentials(username, password).then(
-    (bands) => bands.length > 0
+    (bands) => bands.length > 0,
   );
 }
 /**
@@ -68,7 +68,7 @@ router.post(
     try {
       const bands = await getBandByCredentials(
         req.body.username,
-        req.body.password
+        req.body.password,
       );
 
       if (bands.length > 0) {
@@ -91,7 +91,7 @@ router.post(
         band: null,
       });
     }
-  }
+  },
 );
 
 /**
@@ -126,7 +126,7 @@ router.put(
       success: false,
       message: "Under construction",
     });
-  }
+  },
 );
 
 /**
@@ -156,7 +156,10 @@ router.put(
         });
       }
 
-      const result = await createAvailableEvent(req.body.username, req.body.date);
+      const result = await createAvailableEvent(
+        req.body.username,
+        req.body.date,
+      );
 
       if (result > 0) {
         return res.json({
@@ -175,7 +178,7 @@ router.put(
         message: "Error on setting new availability :" + err.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -199,7 +202,7 @@ router.delete(
       let isPart = await isPartOfTheEvent(
         req.body.private_event_id,
         "band",
-        req.body.username
+        req.body.username,
       );
 
       if (!isPart) {
@@ -230,7 +233,7 @@ router.delete(
         message: "Error deleting request: " + err.message,
       });
     }
-  }
+  },
 );
 
 /**
@@ -240,20 +243,61 @@ router.delete(
  */
 router.post(
   "/updateBand",
-  requireBody(["username", "password"]),
+  requireBody([
+    "username",
+    "password",
+    "band_city",
+    "band_description",
+    "band_name",
+    "email",
+    "foundedYear",
+    "members_number",
+    "music_genres",
+    "photo",
+    "telephone",
+    "webpage",
+  ]),
   async (req, res) => {
     console.log("/band/updateBand endpoint hit");
-    if (!(await checkIfBand(req.body.username, req.body.password))) {
-      return res.json({
+
+    try {
+      const telephoneTaken = await phoneExistsSimpleForother(
+        data.username,
+        data.telephone,
+      );
+
+      if (telephoneTaken) {
+        return res.status(409).json({
+          success: false,
+          error: "An account already exists using this phone number",
+          mytype: "sameusername",
+        });
+      }
+
+      const result = await updateBand(
+        data.username,
+        data.password,
+        data.band_city,
+        data.band_description,
+        data.band_name,
+        data.email,
+        data.foundedYear,
+        data.members_number,
+        data.music_genres,
+        data.photo,
+        data.telephone,
+        data.webpage
+      );
+
+      return res.status(200).json(result);
+    } catch (err) {
+      console.error("Update-band error:", err);
+      return res.status(500).json({
         success: false,
-        message: "Unauthorized: Invalid credentials",
+        error: err.message,
       });
     }
-    return res.json({
-      success: false,
-      message: "Under construction",
-    });
-  }
+  },
 );
 
 /**
@@ -289,7 +333,7 @@ router.post(
       let isPart = await isPartOfTheEvent(
         req.body.private_event_id,
         "band",
-        req.body.username
+        req.body.username,
       );
 
       if (!isPart) {
@@ -301,7 +345,7 @@ router.post(
 
       const result = await updateRequest(
         req.body.private_event_id,
-        req.body.band_decision
+        req.body.band_decision,
       );
 
       if (result > 0) {
@@ -322,7 +366,7 @@ router.post(
         message: "Error updating request: " + err.message,
       });
     }
-  }
+  },
 );
 
 module.exports = router;
