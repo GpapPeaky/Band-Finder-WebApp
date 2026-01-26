@@ -6,7 +6,11 @@ const {
   getBandIdByName,
   getBandAvailability,
 } = require("../databaseQueriesBands");
-const { insertReview, insertPrivateEvent,updatePrivateEvent } = require("../databaseInsert");
+const {
+  insertReview,
+  insertPrivateEvent,
+  updatePrivateEvent,
+} = require("../databaseInsert");
 const {
   getUserByCredentials,
   updateUser,
@@ -197,12 +201,19 @@ router.put(
         event_lon: lon ?? null,
       };
 
-      const msg = await updatePrivateEvent(eventRequest); // Added await
+      const affectedRows = await updatePrivateEvent(eventRequest); // Added await
 
-      return res.json({
-        success: true,
-        message: msg,
-      });
+      if (affectedRows == 0) {
+        return res.status(401).json({
+          success: false,
+          message: "Didnt find the event",
+        });
+      } else {
+        return res.status(200).json({
+          success: true,
+          message: "Updated event successfully",
+        });
+      }
     } catch (err) {
       console.error("Error in /user/requestBand:", err);
 
