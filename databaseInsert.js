@@ -291,35 +291,34 @@ async function insertPrivateEvent(event) {
     const conn = await getConnection();
 
     const insertQuery = `
-      INSERT INTO private_events (
-        band_id,
-        price,
-        status,
-        band_decision,
-        user_id,
-        event_type,
-        event_datetime,
-        event_description,
-        event_city,
-        event_address,
-        event_lat,
-        event_lon
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      UPDATE private_events
+      SET
+        price = ?,
+        status = ?,
+        band_decision = ?,
+        user_id = ?,
+        event_type = ?,
+        event_description = ?,
+        event_city = ?,
+        event_address = ?,
+        event_lat = ?,
+        event_lon = ?
+      WHERE band_id = ? AND event_datetime = ?
     `;
 
     await conn.execute(insertQuery, [
-      event.band_id,
       event.price,
       event.status,
       event.band_decision,
       event.user_id,
       event.event_type,
-      event.event_datetime,
       event.event_description,
       event.event_city,
       event.event_address,
       event.event_lat,
       event.event_lon,
+      event.band_id,
+      event.event_datetime,
     ]);
 
     return "Event request by user " + event.user_id + " for band " + event.band_id + " inserted successfully.";
