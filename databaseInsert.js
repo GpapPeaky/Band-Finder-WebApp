@@ -95,7 +95,7 @@ async function insertAdmin(admin) {
     `;
     await conn.execute(insertQuery, [
       admin.admin_username,
-      admin.admin_password
+      admin.admin_password,
     ]);
 
     return "Admin inserted successfully.";
@@ -179,7 +179,7 @@ async function deleteReview(review_id) {
     const deleteQuery = `DELETE FROM reviews WHERE review_id = ?`;
 
     console.log(
-      `Executing: DELETE FROM reviews WHERE review_id = ${review_id}`
+      `Executing: DELETE FROM reviews WHERE review_id = ${review_id}`,
     );
 
     const [result] = await conn.execute(deleteQuery, [review_id]);
@@ -223,7 +223,7 @@ async function modifyReview(review_id, status) {
     `;
 
     console.log(
-      `Executing: UPDATE reviews SET status='${status}' WHERE review_id=${review_id} AND status='pending'`
+      `Executing: UPDATE reviews SET status='${status}' WHERE review_id=${review_id} AND status='pending'`,
     );
 
     const [result] = await conn.execute(updateQuery, [status, review_id]);
@@ -234,7 +234,7 @@ async function modifyReview(review_id, status) {
       console.log(`Update failed. Possible reasons:`);
       console.log(`1. Review ${review_id} not found`);
       console.log(
-        `2. Review status is not 'pending' (it's '${currentStatus}')`
+        `2. Review status is not 'pending' (it's '${currentStatus}')`,
       );
     }
 
@@ -290,6 +290,44 @@ async function insertPrivateEvent(event) {
     console.log(event);
     const conn = await getConnection();
 
+    const insertQuery = `INSERT INTO private_events
+  ( band_id, price, status, band_decision, user_id, event_type,
+    event_datetime, event_description, event_city, event_address, event_lat, event_lon ) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
+    await conn.execute(insertQuery, [
+      event.band_id,
+      event.price,
+      event.status,
+      event.band_decision,
+      event.user_id,
+      event.event_type,
+      event.event_datetime,
+      event.event_description,
+      event.event_city,
+      event.event_address,
+      event.event_lat,
+      event.event_lon,
+    ]);
+
+    return (
+      "Event request by user " +
+      event.user_id +
+      " for band " +
+      event.band_id +
+      " inserted successfully."
+    );
+  } catch (err) {
+    console.log(err.message);
+    throw new Error("DB error: " + err.message);
+  }
+}
+
+async function updatePrivateEvent(event) {
+  try {
+    console.log(event);
+    const conn = await getConnection();
+
     const insertQuery = `
       UPDATE private_events
       SET
@@ -321,13 +359,18 @@ async function insertPrivateEvent(event) {
       event.event_datetime,
     ]);
 
-    return "Event request by user " + event.user_id + " for band " + event.band_id + " inserted successfully.";
+    return (
+      "Event request by user " +
+      event.user_id +
+      " for band " +
+      event.band_id +
+      " inserted successfully."
+    );
   } catch (err) {
     console.log(err.message);
     throw new Error("DB error: " + err.message);
   }
 }
-
 module.exports = {
   insertUser,
   insertBand,
@@ -336,6 +379,7 @@ module.exports = {
   insertMessage,
   insertPublicEvent,
   insertPrivateEvent,
+  updatePrivateEvent,
   modifyReview,
   deleteReview,
 };

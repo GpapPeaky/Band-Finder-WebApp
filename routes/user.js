@@ -6,7 +6,7 @@ const {
   getBandIdByName,
   getBandAvailability,
 } = require("../databaseQueriesBands");
-const { insertReview, insertPrivateEvent } = require("../databaseInsert");
+const { insertReview, insertPrivateEvent,updatePrivateEvent } = require("../databaseInsert");
 const {
   getUserByCredentials,
   updateUser,
@@ -197,7 +197,7 @@ router.put(
         event_lon: lon ?? null,
       };
 
-      const msg = await insertPrivateEvent(eventRequest); // Added await
+      const msg = await updatePrivateEvent(eventRequest); // Added await
 
       return res.json({
         success: true,
