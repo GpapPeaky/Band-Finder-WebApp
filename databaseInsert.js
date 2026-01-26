@@ -344,7 +344,7 @@ async function updatePrivateEvent(event) {
       WHERE band_id = ? AND event_datetime = ?
     `;
 
-    await conn.execute(insertQuery, [
+    const [result] = await conn.execute(insertQuery, [
       event.price,
       event.status,
       event.band_decision,
@@ -359,13 +359,7 @@ async function updatePrivateEvent(event) {
       event.event_datetime,
     ]);
 
-    return (
-      "Event request by user " +
-      event.user_id +
-      " for band " +
-      event.band_id +
-      " inserted successfully."
-    );
+    return result.affectedRows;
   } catch (err) {
     console.log(err.message);
     throw new Error("DB error: " + err.message);
