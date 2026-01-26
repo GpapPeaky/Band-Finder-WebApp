@@ -89,7 +89,7 @@
 
 .butt {
     padding: 8px 16px;               /* Comfortable size */
-    background-color: #8eff92;       /* Nice green */
+    background-color: #f0f0f0;       /* Nice green */
     color: rgb(62, 62, 62);                    /* Text color */
     border: none;                    /* Remove default border */
     border-radius: 16px;              /* Rounded corners */
@@ -100,16 +100,16 @@
 }
 
 .butt:hover {
-    background-color: #45a049;       /* Slightly darker green */
+    background-color: #bfcbcf;       /* Slightly darker green */
     transform: translateY(-1px);     /* Tiny lift effect */
 }
 
 .butt:active {
-    background-color: #3e8e41;       /* Even darker on click */
+    background-color: #79d4d1;       /* Even darker on click */
     transform: translateY(0);        /* Press effect */
 }
 
 .butt:focus {
     outline: none;                   /* Remove default outline */
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.4); /* Soft focus ring */
+    box-shadow: 0 0 0 3px rgba(76, 142, 175, 0.632); /* Soft focus ring */
 }

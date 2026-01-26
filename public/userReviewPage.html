@@ -73,7 +73,7 @@
     
     async function fetchBandPublicEvents() {
         const res = await fetch(
-        `/general/seePublicEvents`
+            `/general/seePublicEvents`
         );
         const data = await res.json();
     
@@ -88,22 +88,22 @@
         const id = bandID;
     
         data.events.forEach(r => {
-        const li = document.createElement("li");
-
-        // Show ONLY published events
-        if (r.band_id == id) {
-            li.innerHTML = `
-            <h3><i>${r.event_type}</i></h3>
-            <p><strong>${r.event_city}</strong></p>
-            <p class="desc"> ${r.event_address}</p>
-            <p class="desc">${r.event_datetime}</p>
-            <p class="desc">${r.event_description || ""}</p>
-            <p class="desc">${r.participants_price || ""}</p>
-            `;
-            li.classList.add("publicEvent-card");
-        }
+            const li = document.createElement("li");
     
-        list.appendChild(li);
+            // Show ONLY published events
+            if (r.band_id == id) {
+                li.innerHTML = `
+                <h3><i>${r.event_type}</i></h3>
+                <p><strong>${r.event_city}</strong></p>
+                <p class="desc"> ${r.event_address}</p>
+                <p class="desc">${r.event_datetime}</p>
+                <p class="desc">${r.event_description || ""}</p>
+                <p class="desc">${r.participants_price || ""}</p>
+                `;
+                li.classList.add("publicEvent-card");
+            }
+        
+            list.appendChild(li);
         });
     }
     

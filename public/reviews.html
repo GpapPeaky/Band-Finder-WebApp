@@ -358,13 +358,13 @@
                 hour: "2-digit", minute: "2-digit"
             });
 
-            if (userID !== r.user_id ) return; // SHOW ONLY CURRENT USER'S
-
             const status = (r.status === "to be done" ? "accepted" : r.status) || "UNKNOWN";
             const location = (r.event_city || r.event_address)
                 ? `${r.event_city || ""} ${r.event_address || ""}`.trim()
                 : "Location not provided";
     
+            if (userID !== r.user_id && r.status !== "available") return; // SHOW ONLY CURRENT USER'S and availabilities
+
             const li = document.createElement("li");
             li.innerHTML = `
                 <p><strong><i>${status.toUpperCase()}</i></strong></p>
@@ -377,18 +377,32 @@
             li.classList.add(`${status}-card`);
             list.appendChild(li);
 
-            if (r.status === "to be done") {
+            if (r.status === "to be done" || r.status === "requested") {
                 const button = document.createElement("button");
                 button.classList.add(`butt`)
                 button.textContent = "Messages";
 
-                button.addEventListener('click', () =>
-                  window.location.href = "/messageIndexBumAss.html"  
-                );
+                button.addEventListener("click", () => {
+                    window.localStorage.setItem("bn", bandName); // Carry over the band name
+                    window.location.href =
+                        `/messageIndexBumAss.html?i=${encodeURIComponent(r.private_event_id)}`;
+                });
                 
                 const br = document.createElement("br");
                 li.appendChild(button);
-                li.appendChild("br");
+            } else if (r.status === "available") {
+                const button = document.createElement("button");
+                button.classList.add(`butt`)
+                button.textContent = "Request Event";
+
+                button.addEventListener("click", () => {
+                    window.localStorage.setItem("bn", bandName); // CarryOver the band name
+                    window.location.href =
+                        `/eventRequest.html?i=${encodeURIComponent(r.private_event_id)}`;
+                });
+                
+                const br = document.createElement("br");
+                li.appendChild(button);
             }
         });
     }
