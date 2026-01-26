@@ -397,6 +397,7 @@
 
                 button.addEventListener("click", () => {
                     window.localStorage.setItem("bn", bandName); // CarryOver the band name
+                    window.localStorage.setItem("date", r.event_datetime);
                     window.location.href =
                         `/eventRequest.html?i=${encodeURIComponent(r.private_event_id)}`;
                 });

@@ -61,9 +61,6 @@
       <label for="event_type">Event Type</label>
       <input type="text" id="event_type" name="event_type" placeholder="Enter event type" required>
 
-      <label for="event_datetime">Event Date & Time</label>
-      <input type="datetime-local" id="event_datetime" name="event_datetime" required>
-
       <label for="event_description">Event Description</label>
       <textarea id="event_description" name="event_description" rows="4" placeholder="Enter description"></textarea>
 
@@ -79,8 +76,9 @@
 
   <script>
     let user = JSON.parse(window.localStorage.getItem("currentUser"));
+    let date = window.localStorage.getItem("date");
 
-    console.log(user);
+    console.log(date);
 
     const form = document.getElementById('createEventForm');
 
@@ -91,10 +89,10 @@
         username: user.username,
         password: user.password,
         event_type: form.event_type.value,
-        date: form.event_datetime.value,
         event_description: form.event_description.value,
         event_city: form.event_city.value,
         event_address: form.event_address.value,
+        date: date,
         band_name: window.localStorage.getItem("bn")
       };
 
@@ -108,6 +106,9 @@
         });
 
         const result = await res.json();
+
+        console.log(result);
+
         if (result.success) {
           alert('Event created successfully!');
           form.reset();
