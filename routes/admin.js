@@ -4,7 +4,10 @@ const router = express.Router();
 const { modifyReview, deleteReview } = require("../databaseInsert");
 const { deleteUser } = require("../databaseQueriesUsers");
 
-const { checkIfLoggedInAsAdmin , getPendingReviews } = require("../databaseQueriesAdmin");
+const {
+  checkIfLoggedInAsAdmin,
+  getPendingReviews,
+} = require("../databaseQueriesAdmin");
 
 const { getBandsPerCity } = require("../databaseQueriesBands");
 const {
@@ -71,14 +74,14 @@ router.post(
         success: false,
         message: "Unauthorized: Admin credentials are invalid",
       });
-    }else{
+    } else {
       return res.json({
         success: true,
         message: "Admin credentials are valid",
-        user:{
-          username:req.body.username,
-          password: req.body.password
-        }
+        user: {
+          username: req.body.username,
+          password: req.body.password,
+        },
       });
     }
   },
@@ -102,8 +105,8 @@ router.post(
       message: "Pending reviews retrieved successfully",
       reviews: reviews,
     });
-  }
-)
+  },
+);
 /**
  *  Admin removes a user by username
  *  Gets a JSON with "username" "password" (of the admin)
@@ -159,11 +162,10 @@ router.post(
 /**
  * Admin's system overview - gets number of events per type
  * Gets a JSON with "username" "password" (of the admin)
- * Returns JSON with {success:true/false , message, numberOfEvents (of type :type)}
+ * Returns JSON with {success:true/false , message, public, private}
  */
 router.post(
-  "/numOfEvents/:type",
-  requireParams(["type"]),
+  "/numOfEvents",
   requireBody(["username", "password"]),
   async (req, res) => {
     console.log("/admin/numOfEvents endpoint hit");
@@ -173,30 +175,27 @@ router.post(
         return res.json({
           success: false,
           message: "Unauthorized: Admin credentials are invalid",
-          numberOfEvents: 0,
+          public: 0,
+          private: 0,
         });
       }
 
-      if (req.params.type !== "public" && req.params.type !== "private") {
-        return res.json({
-          success: false,
-          message: "Invalid event type",
-          numberOfEvents: 0,
-        });
-      }
+      const numberOfPublic = await getNumberOfEventsByType("public");
+      const numberOfPrivate = await getNumberOfEventsByType("private");
 
-      const numberOfEvents = await getNumberOfEventsByType(req.params.type);
       return res.json({
         success: true,
-        message: `Number of events of type ${req.params.type} retrieved successfully`,
-        numberOfEvents: numberOfEvents,
+        message: `Number of events retrieved successfully`,
+        public: numberOfPublic,
+        private: numberOfPrivate,
       });
     } catch (err) {
       console.error("Error in /admin/numOfEvents:", err);
       return res.json({
         success: false,
         message: "Server error: " + err.message,
-        numberOfEvents: 0,
+        public: 0,
+        private: 0,
       });
     }
   },
@@ -205,11 +204,10 @@ router.post(
 /**
  * Admin's system overview - gets number of users per type
  * Gets a JSON with "username" "password" (of the admin)
- * Returns JSON with {success:true/false , message, numberOfUsers (of type :type)}
+ * Returns JSON with {success:true/false , message, user, band}
  */
 router.post(
-  "/numOfUsers/:type",
-  requireParams(["type"]),
+  "/numOfUsers",
   requireBody(["username", "password"]),
   async (req, res) => {
     console.log("/admin/numOfUsers endpoint hit");
@@ -218,30 +216,27 @@ router.post(
       return res.json({
         success: false,
         message: "Unauthorized: Admin credentials are invalid",
-        numberOfUsers: 0,
+        user: 0,
+        band: 0,
       });
     }
     try {
-      if (req.params.type !== "band" && req.params.type !== "user") {
-        return res.json({
-          success: false,
-          message: "Invalid user type",
-          numberOfUsers: 0,
-        });
-      }
+      const numberOfUsers = await getNumberOfUsersByType("user");
+      const numberOfBands = await getNumberOfUsersByType("band");
 
-      const numberOfUsers = await getNumberOfUsersByType(req.params.type);
       return res.json({
         success: true,
-        message: `Number of users of type ${req.params.type} retrieved successfully`,
-        numberOfUsers: numberOfUsers,
+        message: `Number of users retrieved successfully`,
+        user: numberOfUsers,
+        band: numberOfBands
       });
     } catch (err) {
       console.error("Error in /admin/numOfUsers:", err);
       return res.json({
         success: false,
         message: "Server error: " + err.message,
-        numberOfUsers: 0,
+        user: 0,
+        band: 0,
       });
     }
   },

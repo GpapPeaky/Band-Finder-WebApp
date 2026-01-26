@@ -287,6 +287,7 @@ async function insertPublicEvent(event) {
 
 async function insertPrivateEvent(event) {
   try {
+    console.log(event);
     const conn = await getConnection();
 
     const insertQuery = `

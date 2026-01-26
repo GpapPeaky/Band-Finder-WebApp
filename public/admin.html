@@ -29,10 +29,105 @@
         margin-bottom: 40px;
       }
     </style>
+    <script
+      type="text/javascript"
+      src="https://www.gstatic.com/charts/loader.js"
+    ></script>
+    <script type="text/javascript">
+      google.charts.load("current", { packages: ["corechart"] });
+
+      google.charts.setOnLoadCallback(function () {
+        drawChart(0, "/admin/bandsPerCity", "Bands Per City");
+        drawChart(1, "/admin/numOfEvents", "Number Of Events");
+        drawChart(2, "/admin/numOfUsers", "Number of Users");
+      });
+
+      async function drawChart(id, apiCall, titleArgument) {
+        try {
+          let user = JSON.parse(window.localStorage.getItem("currentUser"));
+
+          const credentials = {
+            username: user.username,
+            password: user.password,
+          };
+          console.log("_____ Credentials _____");
+          console.log(credentials);
+          console.log("_______________________");
+
+          const response = await fetch(apiCall, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(credentials),
+          });
+
+          if (!response)
+            throw new Error("Didnt get a responce from the server");
+
+          const result = await response.json();
+
+          let dataArray;
+          if (id == 0) {
+            dataArray = [["City", "Bands"]];
+
+            result.cityBands.forEach((item) => {
+              dataArray.push([item.band_city, item.band_count]);
+            });
+          } else if (id == 1) {
+            dataArray = [["public", "private"]];
+
+            dataArray.push(["public", result.public]);
+            dataArray.push(["private", result.private]);
+          } else {
+            dataArray = [["users", "bands"]];
+
+            dataArray.push(["users", result.user]);
+            dataArray.push(["bands", result.band]);
+          }
+          var data = google.visualization.arrayToDataTable(dataArray);
+
+          var options = {
+            title: titleArgument,
+            is3D: true,
+          };
+
+          let value = document.getElementsByClassName("piechart");
+          var chart = new google.visualization.PieChart(value[id]);
+
+          chart.draw(data, options);
+        } catch (err) {
+          alert(err.message);
+        }
+      }
+    </script>
+    <script>
+      async function fetchRevenue() {
+        let user = JSON.parse(window.localStorage.getItem("currentUser"));
+
+        const credentials = {
+          username: user.username,
+          password: user.password,
+        };
+
+        const response = await fetch("/admin/numberOfEarning", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(credentials),
+        });
+
+        const result = await response.json();
+
+        document.getElementById("totalRevenue").textContent =
+          "€" + result.totalEarnings;
+      }
+
+      window.addEventListener("load", fetchRevenue);
+    </script>
   </head>
   <body>
     <div class="container">
-      <h1 style="color: white">Admin Dashboard</h1>
+      <h1>Admin Dashboard</h1>
 
       <!-- Remove User Section -->
       <div class="section">
@@ -51,7 +146,19 @@
         <h2>Review Management</h2>
         <p style="color: white; margin-bottom: 15px">Manage pending reviews</p>
         <div id="review_list"></div>
-      </div>  
+      </div>
+
+      <h2>System Overview</h2>
+      <div class="piechart"></div>
+
+      <div class="piechart"></div>
+
+      <div class="piechart"></div>
+
+      <div class="Revenue">
+        <h3>Total Revenue</h3>
+        <p id="totalRevenue">€0</p>
+      </div>
 
       <!-- Logout -->
       <a
@@ -70,7 +177,6 @@
         Logout
       </a>
     </div>
-
     <!-- Import authentication system -->
     <script src="./JS/loginCheck.js"></script>
     <script src="./JS/admin.js"></script>
@@ -80,6 +186,34 @@
       const username = document.getElementById("removeUsername").value;
       const resultDiv = document.getElementById("removeResult");
 
+      try {
+        let user = JSON.parse(window.localStorage.getItem("currentUser"));
+
+        const credentials = {
+          username: user.username,
+          password: user.password,
+        };
+        console.log("_____ Credentials _____");
+        console.log(credentials);
+        console.log("_______________________");
+
+        const response = await fetch(`admin/removeUser/${username}`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(credentials),
+        });
+
+        if (!response) throw new Error("Didnt get a responce from the server");
+
+        const result = await response.json();
+
+        resultDiv.innerHTML=`<p><strong>${result}</p></strong>`;
+        document.getElementById("removeUsername").value = "";
+      } catch (err) {
+        console.log(err);
+      }
       // api call /admin/remove-user/:username + BODY {admin credentials from session}
     }
   </script>

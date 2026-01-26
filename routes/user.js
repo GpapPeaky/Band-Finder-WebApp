@@ -116,7 +116,10 @@ router.put(
     "event_description",
   ]),
   async (req, res) => {
-    console.log("/user/requestBand endpoint hit");
+    console.log("/user/requestBand endpoint hitt");
+
+    let band_id;
+    let user_id;
 
     try {
       if (!(await checkIfUser(req.body.username, req.body.password))) {
@@ -130,8 +133,16 @@ router.put(
       //  request is handled as a private event with status "pending"
       //  and the band accepts/rejects accordingly
 
-      const band_id = await getBandIdByName(req.body.band_name);
-      const user_id = await getUserIdByName(req.body.username);
+      band_id = await getBandIdByName(req.body.band_name);
+      user_id = await getUserIdByName(req.body.username);
+
+      if (!user_id || !band_id)
+        return res.json({
+          success: false,
+          message: "not found user_id or band_id",
+        });
+      console.log("band id :" + band_id);
+      console.log("user id :" + user_id);
 
       let price;
       switch (req.body.event_type) {
@@ -171,20 +182,20 @@ router.put(
       }
 
       // Construct object
-      const eventRequest = [
+      const eventRequest = {
         band_id,
         price,
-        "pending", // status
-        "pending", // band_decision
+        status: "requested",
+        band_decision: "requested",
         user_id,
-        req.body.event_type,
-        req.body.date,
-        req.body.event_description,
-        req.body.event_city,
-        req.body.event_address,
-        lat,
-        lon,
-      ];
+        event_type: req.body.event_type,
+        event_datetime: req.body.date,
+        event_description: req.body.event_description,
+        event_city: req.body.event_city,
+        event_address: req.body.event_address,
+        event_lat: lat ?? null,
+        event_lon: lon ?? null,
+      };
 
       const msg = await insertPrivateEvent(eventRequest); // Added await
 

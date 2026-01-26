@@ -91,6 +91,7 @@ function displayReviews(reviews) {
     const reviewCard = document.createElement("div");
     reviewCard.classList.add("review-card");
 
+    reviewCard.id = `review-${review.review_id}`;
     // Build review HTML
     reviewCard.innerHTML = `
       <h3>Review #${review.review_id}</h3>
@@ -112,19 +113,23 @@ function displayReviews(reviews) {
     list.appendChild(reviewCard);
   });
 }
-
 async function updateReviewStatus(review_id, status) {
+  console.log("=== UPDATE REVIEW STATUS CALLED ===");
+  console.log("Review ID:", review_id);
+  console.log("Status:", status);
+  
   const session = checkSession();
 
   if (!review_id || !status) {
-    console.log();
+    console.error("❌ Missing review_id or status");
+    return;
   }
+  
   if (!session) {
     alert("Session expired. Please login again.");
     window.location.href = "index.html";
     return;
   }
-  console.log(session);
 
   // Create credentials JSON from localStorage
   const credentials = {
@@ -132,11 +137,11 @@ async function updateReviewStatus(review_id, status) {
     password: session.user.password,
   };
 
-  console.log(
-    " ================= SENDING UPDATEREVIEW =========================",
-  );
-  console.log(JSON.stringify(credentials));
+  console.log("Sending credentials:", credentials);
+  
   try {
+    console.log("Making fetch request to:", `/admin/reviewStatus/${review_id}/${status}`);
+    
     const response = await fetch(`/admin/reviewStatus/${review_id}/${status}`, {
       method: "POST",
       headers: {
@@ -145,42 +150,46 @@ async function updateReviewStatus(review_id, status) {
       body: JSON.stringify(credentials),
     });
 
+    console.log("Response status:", response.status);
+    console.log("Response ok:", response.ok);
+
     if (!response.ok) {
       throw new Error(`Server error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("Update response:", data);
+    console.log("✅ Response data:", data);
+    console.log("Success:", data.success);
 
     // If successful, remove the review card from DOM
     if (data.success) {
+      console.log("Trying to find element: review-" + review_id);
       const reviewCard = document.getElementById(`review-${review_id}`);
+      console.log("Found element:", reviewCard);
+      
       if (reviewCard) {
-        // Add fade-out animation
-        reviewCard.style.transition = "opacity 0.3s ease-out";
-        reviewCard.style.opacity = "0";
-
-        // Remove after animation
-        setTimeout(() => {
-          reviewCard.remove();
-
-          // Check if there are no more reviews
-          const list = document.getElementById("review_list");
-          if (list.children.length === 0) {
-            list.innerHTML = `
-              <div class="result-message" style="background: white; padding: 20px; text-align: center;">
-                No reviews to display
-              </div>
-            `;
-          }
-        }, 300);
+        console.log("Removing card...");
+        reviewCard.remove();
+        console.log("Card removed!");
+        
+        // Check if there are no more reviews
+        const list = document.getElementById("review_list");
+        if (list.children.length === 0) {
+          list.innerHTML = `
+            <div class="result-message" style="background: white; padding: 20px; text-align: center;">
+              No reviews to display
+            </div>
+          `;
+        }
+      } else {
+        console.error("Could not find review card element!");
       }
-
-      console.log(`Review ${review_id} ${status} successfully`);
+      
     } else {
-      alert(`Failed to update review: ${data.error || data.message}`);
+      console.error("API returned success: false");
     }
+
   } catch (err) {
-    console.log(err.message);
+    console.error("❌ Error updating review:", err);
   }
 }

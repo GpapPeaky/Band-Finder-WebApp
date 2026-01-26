@@ -45,14 +45,17 @@ async function getUserIdByName(username) {
   try {
     conn = await getConnection();
 
-    const selectQuery = `
-      SELECT user_id FROM users
-      WHERE username = ?
-    `;
+    const [rows] = await conn.query(
+      "SELECT user_id FROM users WHERE username = ?",
+      [username]
+    ,);
 
-    const [user_id] = await conn.execute(selectQuery, [user_id]);
+    if (rows.length === 0) {
+      console.log("sapio error");
+      throw new Error("User not found");
+    }
 
-    return user_id;
+    return rows[0].user_id;
   } catch(err) {
     throw new Error("DB error: " + err.message);
   } finally {
