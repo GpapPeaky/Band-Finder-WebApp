@@ -76,50 +76,59 @@
 
   <script>
     let user = JSON.parse(window.localStorage.getItem("currentUser"));
-    let date = window.localStorage.getItem("date");
-
-    console.log(date);
-
+    let primdate = window.localStorage.getItem("date"); // "2026-05-18T18:00:00.000Z"
+    
+    const dateObj = new Date(primdate);
+    
+    // Extract year, month, day, hours, minutes, seconds
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+    const seconds = String(dateObj.getSeconds()).padStart(2, "0");
+    
+    // Format as "YYYY-MM-DD HH:MM:SS"
+    const prettyDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    
+    console.log(prettyDate); // "2026-05-18 18:00:00"
+    
     const form = document.getElementById('createEventForm');
-
+    
     form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const data = {
+    e.preventDefault();
+    
+    const data = {
         username: user.username,
         password: user.password,
         event_type: form.event_type.value,
         event_description: form.event_description.value,
         event_city: form.event_city.value,
         event_address: form.event_address.value,
-        date: date,
+        date: prettyDate,
         band_name: window.localStorage.getItem("bn")
-      };
-
-      console.log(data);
-
-      try {
+    };
+    
+    try {
         const res = await fetch('user/requestBand', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data)
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
         });
-
+    
         const result = await res.json();
-
-        console.log(result);
-
+    
         if (result.success) {
-          alert('Event created successfully!');
-          form.reset();
+        alert('Event created successfully!');
+        form.reset();
         } else {
-          alert('Error: ' + (result.message || 'Unknown error'));
+        alert('Error: ' + (result.message || 'Unknown error'));
         }
-      } catch (err) {
+    } catch (err) {
         console.error(err);
         alert('Server error, check console.');
-      }
+    }
     });
-  </script>
+</script>
 </body>
 </html>
