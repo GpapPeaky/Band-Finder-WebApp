@@ -65,6 +65,17 @@ app.use(
   },
   require("./routes/general")
 );
+
+app.use(
+  "/llm",
+  (req, res, next) => {
+    console.log("→ Routed to /llm");
+    next();
+  },
+  require("./routes/llm")
+);
 app.listen(PORT, () => {
   console.log(`Server open at: http://localhost:${PORT}`);
 });
+
+// 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
