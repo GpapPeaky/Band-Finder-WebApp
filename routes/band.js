@@ -1,12 +1,13 @@
 const express = require("express");
 const router = express.Router();
 
-const { getBandByCredentials,updateBand } = require("../databaseQueriesBands");
+const { getBandByCredentials,updateBand,getBandIdByUserName } = require("../databaseQueriesBands");
 const { isPartOfTheEvent,phoneExistsSimpleForother } = require("../databaseQueriesBoth");
 const {
   updateRequest,
   deleteAvailableEvent,
   createAvailableEvent,
+  createPublicEvent
 } = require("../databaseQueriesEvents");
 function requireBody(fields) {
   return (req, res, next) => {
@@ -122,10 +123,36 @@ router.put(
         message: "Unauthorized: Invalid credentials",
       });
     }
-    return res.json({
-      success: false,
-      message: "Under construction",
-    });
+    try {
+      const affectedRows = await createPublicEvent(
+        await getBandIdByUserName(req.body.username),
+        req.body.event_address,
+        req.body.event_city,
+        req.body.event_datetime,
+        req.body.event_description,
+        req.body.event_lat,
+        req.body.event_lon,
+        req.body.event_type,
+        req.body.participants_price
+      );
+
+      if (affectedRows === 0) {
+        return res.json({
+          success: false,
+          message: "Failed to create event",
+        });
+      }
+
+      return res.json({
+        success: true,
+        message: "Event created successfully",
+      });
+    } catch (err) {
+      return res.json({
+        success: false,
+        message: "Error creating event: " + err.message,
+      });
+    }
   },
 );
 

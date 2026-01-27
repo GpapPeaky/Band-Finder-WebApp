@@ -142,6 +142,27 @@ async function deleteAvailableEvent(private_event_id) {
   }
 }
 
+async function createPublicEvent(band_id, event_address, event_city, event_datetime, event_description, event_lat, event_lon, event_type, participants_price) {
+  let conn;
+  try {
+    conn = await getConnection();
+    const [result] = await conn.query(
+      `
+            INSERT INTO public_events (band_id, event_address, event_city, event_datetime, event_description, event_lat, event_lon, event_type, participants_price)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      [band_id, event_address, event_city, event_datetime, event_description, event_lat, event_lon, event_type, participants_price]
+    );
+    return result.affectedRows;
+  } catch (error) {
+    console.error("Error in createPublicEvent:", error);
+    throw error;
+  } finally {
+    if (conn) {
+      await conn.end();
+    }
+  }
+}
 async function createAvailableEvent(username, date) {
   let conn;
   try {
@@ -182,4 +203,5 @@ module.exports = {
   updateRequest,
   deleteAvailableEvent,
   createAvailableEvent,
+  createPublicEvent
 };

@@ -32,7 +32,26 @@ async function getBandIdByName(band_name) {
     );
 
     if (rows.length === 0) {
-      throw new Error("Band not found");
+      throw new Error(`Band with band_name ${band_name} not found`);
+    }
+
+    return rows[0].band_id;
+  } finally {
+    if (conn) await conn.end();
+  }
+}
+async function getBandIdByUserName(band_name) {
+  let conn;
+  try {
+    conn = await getConnection();
+
+    const [rows] = await conn.query(
+      "SELECT band_id FROM bands WHERE username = ?",
+      [band_name],
+    );
+
+    if (rows.length === 0) {
+      throw new Error(`Band with username ${band_name} not found`);
     }
 
     return rows[0].band_id;
@@ -528,4 +547,5 @@ module.exports = {
   getBandsByPublicEventPrice,
   getBandAvailability,
   getAllBandsGeneral,
+  getBandIdByUserName
 };
