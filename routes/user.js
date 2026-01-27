@@ -5,6 +5,7 @@ const { phoneExistsSimpleForother } = require("../databaseQueriesBoth");
 const {
   getBandIdByName,
   getBandAvailability,
+  getBandByCredentials
 } = require("../databaseQueriesBands");
 const {
   insertReview,
@@ -61,6 +62,12 @@ function requireParams(params) {
 async function checkIfUser(username, password) {
   const users = await getUserByCredentials(username, password);
   return users.length > 0;
+}
+
+async function checkIfBand(username, password) {
+  return getBandByCredentials(username, password).then(
+    (bands) => bands.length > 0,
+  );
 }
 
 /**
@@ -253,7 +260,7 @@ router.post(
     console.log("/user/seeAvailability endpoint hit");
 
     try {
-      if (!(await checkIfUser(req.body.username, req.body.password))) {
+      if (!(await checkIfUser(req.body.username, req.body.password)) && !(await checkIfBand(req.body.username, req.body.password))) {
         return res.json({
           success: false,
           message: "Unauthorized: Invalid credentials",

@@ -1,14 +1,22 @@
 const express = require("express");
 const router = express.Router();
 
-const { getBandByCredentials,updateBand,getBandIdByUserName } = require("../databaseQueriesBands");
-const { isPartOfTheEvent,phoneExistsSimpleForother } = require("../databaseQueriesBoth");
+const {
+  getBandByCredentials,
+  updateBand,
+  getBandIdByUserName,
+} = require("../databaseQueriesBands");
+const {
+  isPartOfTheEvent,
+  phoneExistsSimpleForother,
+} = require("../databaseQueriesBoth");
 const {
   updateRequest,
   deleteAvailableEvent,
   createAvailableEvent,
-  createPublicEvent
+  createPublicEvent,
 } = require("../databaseQueriesEvents");
+
 function requireBody(fields) {
   return (req, res, next) => {
     if (!req.body || typeof req.body !== "object") {
@@ -133,7 +141,7 @@ router.put(
         req.body.event_lat,
         req.body.event_lon,
         req.body.event_type,
-        req.body.participants_price
+        req.body.participants_price,
       );
 
       if (affectedRows === 0) {
@@ -287,8 +295,8 @@ router.post(
   async (req, res) => {
     console.log("/band/updateBand endpoint hit");
 
-     const data = req.body;
-     
+    const data = req.body;
+
     try {
       const telephoneTaken = await phoneExistsSimpleForother(
         data.username,
@@ -315,7 +323,7 @@ router.post(
         data.music_genres,
         data.photo,
         data.telephone,
-        data.webpage
+        data.webpage,
       );
 
       return res.status(200).json(result);
@@ -353,7 +361,7 @@ router.post(
         req.body.band_decision !== "to be done" &&
         req.body.band_decision !== "rejected"
       ) {
-        return res.json({
+        return res.status(401).json({
           success: false,
           message: "Invalid band_decision. Must be 'to be done' or 'rejected'",
         });
@@ -366,7 +374,7 @@ router.post(
       );
 
       if (!isPart) {
-        return res.json({
+        return res.status(401).json({
           success: false,
           message: "Unauthorized: You are not part of this event",
         });
@@ -378,12 +386,12 @@ router.post(
       );
 
       if (result > 0) {
-        return res.json({
+        return res.status(200).json({
           success: true,
           message: "Request updated successfully",
         });
       } else {
-        return res.json({
+        return res.status(401).json({
           success: false,
           message: "Request didn't get updated (probably wasn't found)",
         });

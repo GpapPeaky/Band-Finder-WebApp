@@ -12,12 +12,12 @@ async function getNumberOfEventsByType(type) {
       throw new Error("Event type is required");
     } else if (type === "private") {
       const [count] = await conn.query(
-        `SELECT COUNT(*) AS count FROM private_events`
+        `SELECT COUNT(*) AS count FROM private_events`,
       );
       return count[0].count;
     } else if (type === "public") {
       const [count2] = await conn.query(
-        `SELECT COUNT(*) AS count FROM public_events`
+        `SELECT COUNT(*) AS count FROM public_events`,
       );
       return count2[0].count;
     } else {
@@ -38,7 +38,7 @@ async function getTotalMoney() {
     conn = await getConnection();
 
     const [count] = await conn.query(
-      `SELECT SUM(price) AS total FROM private_events WHERE status = 'done'`
+      `SELECT SUM(price) AS total FROM private_events WHERE status = 'done'`,
     );
     return count[0].total;
   } catch (error) {
@@ -75,13 +75,13 @@ async function getPrivateEvents(user_type, username) {
     if (user_type === "user") {
       const [events] = await conn.query(
         `SELECT * FROM private_events WHERE user_id = (SELECT user_id FROM users WHERE username = ?)`,
-        [username]
+        [username],
       );
       return events;
     } else {
       const [events] = await conn.query(
         `SELECT * FROM private_events WHERE band_id = (SELECT band_id FROM bands WHERE username = ?)`,
-        [username]
+        [username],
       );
       return events;
     }
@@ -103,10 +103,11 @@ async function updateRequest(private_event_id, band_decision) {
       `
             UPDATE private_events
             SET band_decision = ?
+            , status = ?
             WHERE private_event_id = ?
             AND status = 'requested'
         `,
-      [band_decision, private_event_id]
+      [band_decision,band_decision, private_event_id],
     );
     return result.affectedRows;
   } catch (error) {
@@ -129,7 +130,7 @@ async function deleteAvailableEvent(private_event_id) {
               WHERE private_event_id = ?
               AND status = 'available'
           `,
-      [private_event_id]
+      [private_event_id],
     );
     return result.affectedRows;
   } catch (error) {
@@ -142,7 +143,17 @@ async function deleteAvailableEvent(private_event_id) {
   }
 }
 
-async function createPublicEvent(band_id, event_address, event_city, event_datetime, event_description, event_lat, event_lon, event_type, participants_price) {
+async function createPublicEvent(
+  band_id,
+  event_address,
+  event_city,
+  event_datetime,
+  event_description,
+  event_lat,
+  event_lon,
+  event_type,
+  participants_price,
+) {
   let conn;
   try {
     conn = await getConnection();
@@ -151,7 +162,17 @@ async function createPublicEvent(band_id, event_address, event_city, event_datet
             INSERT INTO public_events (band_id, event_address, event_city, event_datetime, event_description, event_lat, event_lon, event_type, participants_price)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
-      [band_id, event_address, event_city, event_datetime, event_description, event_lat, event_lon, event_type, participants_price]
+      [
+        band_id,
+        event_address,
+        event_city,
+        event_datetime,
+        event_description,
+        event_lat,
+        event_lon,
+        event_type,
+        participants_price,
+      ],
     );
     return result.affectedRows;
   } catch (error) {
@@ -169,21 +190,27 @@ async function createAvailableEvent(username, date) {
     conn = await getConnection();
     const isDateAllreadyClosedQuery = await conn.query(
       `
-            SELECT COUNT(*) AS count
-            FROM private_events pe WHERE pe.event_datetime = ? AND 
-            band_id = (SELECT band_id FROM bands WHERE username = ?)
-      `);
+    SELECT COUNT(*) AS count
+    FROM private_events pe
+    WHERE pe.event_datetime = ?
+      AND band_id = (SELECT band_id FROM bands WHERE username = ?)
+  `,
+      [date, username],
+    );
     if (isDateAllreadyClosedQuery[0][0].count > 0) {
       throw new Error("Date is already booked or marked unavailable");
     }
-    const insertQueryRes = await conn.query(`
+    const insertQueryRes = await conn.query(
+      `
           INSERT INTO private_events (band_id, status, event_datetime)
           VALUES (
             (SELECT band_id FROM bands WHERE username = ?),
             'available',
             ?
           )
-        `,[username, date]);
+        `,
+      [username, date],
+    );
     return insertQueryRes[0].affectedRows;
   } catch (error) {
     console.error("Error in createAvailableEvent:", error);
@@ -203,5 +230,5 @@ module.exports = {
   updateRequest,
   deleteAvailableEvent,
   createAvailableEvent,
-  createPublicEvent
+  createPublicEvent,
 };

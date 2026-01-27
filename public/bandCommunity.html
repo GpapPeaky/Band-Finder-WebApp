@@ -12,6 +12,9 @@
     <meta name="author" content="Apostolakis Giorgos" />
     <link rel="stylesheet" href="./CSS/style.css" />
     <link rel="stylesheet" href="./CSS/navigation.css" />
+
+    <link rel="stylesheet" href="./CSS/reviewCards.css" />
+    <link rel="stylesheet" href="./CSS/publicEventCards.css" />
     <style>
       h2 {
         margin: 20px 0;
@@ -59,6 +62,7 @@
         display: block;
         text-decoration: none;
       }
+
       #addEvent {
         width: 100%;
         height: 40px;
@@ -66,15 +70,52 @@
 
         color: white;
         font-size: large;
-        
+
         display: flex;
         align-items: center; /* vertical */
         justify-content: center; /* horizontal */
         border-radius: 5px;
+        transition: all 0.3s ease;
       }
 
       #addEvent:hover {
-        background-color: #8b8b8b;
+        color: black;
+        background-color: #54b902;
+      }
+      /* Base private event card */
+      .event-list li {
+        list-style: none;
+        border-radius: 8px;
+        padding: 14px 18px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        transition:
+          transform 0.15s ease,
+          box-shadow 0.15s ease;
+      }
+
+      .event-list li:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      }
+
+      .event-list li p {
+        margin: 0;
+        font-size: 14px;
+      }
+      .tobedone-card {
+        background-color: rgb(213, 255, 172);
+      }
+      .available-card {
+        background-color: rgb(173, 216, 230);
+      }
+      .rejected-card {
+        background-color: rgb(255, 182, 193);
+      }
+      .requested-card {
+        background-color: rgb(255, 255, 153);
       }
     </style>
   </head>
@@ -87,9 +128,25 @@
         </ul>
       </div>
       <div class="section">
+        <h2>Your reviews</h2>
+        <ul id="reviews_list" class="review-list"></ul>
+      </div>
+      <div class="section">
         <h2>Public Events</h2>
         <div id="eventList"></div>
         <a href="./bandAddEvent.html" class="add-event-link">
+          <div id="addEvent">+</div>
+        </a>
+      </div>
+      <div class="section">
+        <h2 id="at">Band Private Events</h2>
+        <ul id="availabilities" class="event-list"></ul>
+        <div id="AvailErr"></div>
+        <a
+          href="./bandAddPrivEvent.html"
+          class="add-event-link"
+          style="margin-top: 20px"
+        >
           <div id="addEvent">+</div>
         </a>
       </div>
@@ -98,4 +155,231 @@
     <script src="./JS/loginCheck.js"></script>
     <script src="./JS/band.js"></script>
   </body>
+  <script>
+    let userType = window.localStorage.getItem("userType");
+    let user = JSON.parse(localStorage.getItem("currentUser"));
+
+    console.log(user);
+    console.log(userType);
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      fetchBandReviews(user.band_name);
+      fetchBandAvailability(user.band_name);
+    });
+
+    async function fetchBandReviews(bandName) {
+      const res = await fetch(
+        `/general/reviews/${encodeURIComponent(bandName)}`,
+      );
+      const data = await res.json();
+
+      const list = document.getElementById("reviews_list");
+      list.innerHTML = "";
+
+      if (!data.reviews || data.reviews.length === 0) {
+        list.innerHTML = '<div class="norev">No reviews yet.</p>';
+        return;
+      }
+
+      data.reviews.forEach((r) => {
+        const li = document.createElement("li");
+
+        // Show ONLY published reviews
+        if (r.status == "published") {
+          li.innerHTML = `
+                <h3>${r.sender}</h3>
+                <p><strong>Rating:</strong> ${r.rating}/5</p>
+                <p>${r.review || ""}</p>
+                `;
+          li.classList.add("review" + r.rating + "-card");
+        }
+
+        list.appendChild(li);
+      });
+    }
+    async function fetchBandAvailability(bandName) {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+      if (!user) return console.error("No currentUser in localStorage!");
+
+      const { username, password } = user;
+
+      document.getElementById("at").textContent = bandName
+        ? `${bandName} Private Events`
+        : "Band Private Events";
+
+      const res = await fetch("/user/seeAvailability", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password, band_name: bandName }),
+      });
+
+      const data = await res.json();
+      console.log(data);
+
+      const list = document.getElementById("availabilities");
+      const listErr = document.getElementById("AvailErr");
+      list.innerHTML = "";
+      listErr.innerHTML = "";
+
+      const dates = data.dates || [];
+
+      if (dates.length === 0) {
+        const li = document.createElement("div");
+        li.innerHTML = "You have no available dates";
+        li.classList.add("NotAvailable");
+        listErr.appendChild(li);
+        return;
+      }
+
+      // Append all items without checking band_id
+      dates.forEach((r) => {
+        const date = new Date(r.event_datetime);
+        const prettyDate = date.toLocaleString(undefined, {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        const status = r.status || "unknown";
+
+        const location =
+          r.event_city || r.event_address
+            ? `${r.event_city || ""} ${r.event_address || ""}`.trim()
+            : "Location not provided";
+
+        const li = document.createElement("li");
+        let innerhtml = "";
+        if (r.status === "to be done") {
+          innerhtml = `
+          <p><strong><i>${status.toUpperCase()}</i></strong></p>
+                    <p>${prettyDate}</p>
+                    <p>${location}</p>
+                    ${r.event_description ? `<p>${r.event_description}</p>` : ""}
+                    ${r.event_type ? `<p>${r.event_type}</p>` : ""}
+                    ${r.band_decision ? `<p>${r.band_decision}</p>` : ""}
+                    <p>price: ${r.price ? `${r.price}` : "0.00"} €</p>
+                    <p>user id: ${r.user_id}</p>
+                `;
+        } else if (r.status === "rejected") {
+          innerhtml = `<p><strong><i>${status.toUpperCase()}</i></strong></p>
+                   
+                    <p>${r.event_description}</p>
+                    <p>price: ${r.price ? `<p>${r.price}</p>` : "0.00"} €</p>
+                `;
+        } else if (r.status === "available") {
+          innerhtml = `<p><strong><i>${status.toUpperCase()}</i></strong></p>
+                    <p>${prettyDate}</p>
+                `;
+        } else if (r.status === "requested") {
+          innerhtml = `
+          <p><strong><i>${status.toUpperCase()}</i></strong></p>
+          <p>private event id: ${r.private_event_id}</p>
+                    <p>${prettyDate}</p>
+                    <p>${location}</p>
+                    ${r.event_description ? `<p>${r.event_description}</p>` : ""}
+                    ${r.event_type ? `<p>${r.event_type}</p>` : ""}
+                    <p>price: ${r.price ? `${r.price}` : "0.00"} €</p>
+                    <p>user id: ${r.user_id ? `${r.user_id}` : "Not provided"}</p> 
+                `;
+        } else {
+          alert(r.status);
+        }
+        li.innerHTML = innerhtml;
+        li.classList.add(`${status.replace(/\s/g, "")}-card`);
+        list.appendChild(li);
+
+        if (r.status === "to be done") {
+          const button = document.createElement("button");
+          button.classList.add(`butt`);
+          button.textContent = "Messages";
+
+          button.addEventListener("click", () => {
+            window.localStorage.setItem("bn", r.user_id); // Carry over the user id
+            window.location.href = `/messageIndexBumAss.html?i=${encodeURIComponent(r.private_event_id)}`;
+          });
+
+          const br = document.createElement("br");
+          li.appendChild(button);
+        } else if (r.status === "requested") {
+          // accept reject message buttons
+          const acceptButton = document.createElement("button");
+          acceptButton.classList.add(`acceptbutt`);
+          acceptButton.textContent = "Accept";
+
+          const rejectButton = document.createElement("button");
+          rejectButton.classList.add(`rejectbutt`);
+          rejectButton.textContent = "Reject";
+
+          const button = document.createElement("button");
+          button.classList.add(`butt`);
+          button.textContent = "Messages";
+
+          button.addEventListener("click", () => {
+            window.localStorage.setItem("bn", r.user_id); // Carry over the user id
+            window.location.href = `/messageIndexBumAss.html?i=${encodeURIComponent(r.private_event_id)}`;
+          });
+
+          acceptButton.addEventListener("click", async () => {
+            try {
+              const user = JSON.parse(
+                localStorage.getItem("currentUser"),
+              );
+              const response = await fetch("/band/updateRequest", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  username: user.username,
+                  password: user.password,
+                  private_event_id: r.private_event_id,
+                  band_decision: "to be done",
+                }),
+              });
+
+              const result = await response.json();
+              if (response.ok) {
+                fetchBandAvailability(bandName); // Refresh the list
+              } else {
+                throw new Error(result.message || "Failed to accept event");
+              }
+            } catch (err) {
+              alert(err.message);
+            }
+          });
+
+          rejectButton.addEventListener("click", async () => {
+            try {
+              const user = JSON.parse(
+                localStorage.getItem("currentUser"),
+              );
+              const response = await fetch("/band/updateRequest", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  username: user.username,
+                  password: user.password,
+                  private_event_id: r.private_event_id,
+                  band_decision: "rejected",
+                }),
+              });
+
+              const result = await response.json();
+              if (response.ok) {
+                fetchBandAvailability(bandName); // Refresh the list
+              } else {
+                throw new Error(result.message || "Failed to reject event");
+              }
+            } catch (err) {
+              alert(err.message);
+            }
+          });
+
+          li.appendChild(button);
+          li.appendChild(acceptButton);
+          li.appendChild(rejectButton);
+        }
+      });
+    }
+  </script>
 </html>
