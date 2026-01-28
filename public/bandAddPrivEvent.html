@@ -39,9 +39,10 @@
     <script src="./JS/band.js"></script>
     <script>
       async function submitPrivEvent() {
+        const msg = document.getElementById("formMessage");
+        let data;
         try {
           const session = checkSession();
-          const msg = document.getElementById("formMessage");
 
           let username = session.user.username;
           let password = session.user.password;
@@ -63,7 +64,7 @@
             throw new Error(`Server error: ${response.status}`);
           }
 
-          const data = await response.json();
+          data = await response.json();
           console.log(data);
 
           if (!data.success) {
@@ -72,7 +73,12 @@
 
           msg.innerHTML = `<p style="color: green;"><strong>Event added successfully!</strong></p>`;
         } catch (error) {
-          msg.innerHTML = `<p style="color: red;"><strong>Error adding event: ${error.message}</strong></p>`;
+          if (data) {
+            msg.innerHTML = `<p style="color: red;"><strong>${data.message} </strong></p>`;
+          } else {
+            console.log(error.message);
+            msg.innerHTML = `<p style="color: red;"><strong>Could not add event. Check console for errors.</strong></p>`;
+          }
         }
       }
     </script>
