@@ -1,0 +1,53 @@
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Guest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Allready logged in ? Update your users credentials"
+    />
+    <meta name="keywords" content="csd, personal, website, hy359" />
+    <meta name="author" content="Apostolakis Giorgos" />
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <link rel="stylesheet" href="./CSS/navigation.css">
+    <link rel="stylesheet" href="./CSS/bandCards.css">
+    <link rel="stylesheet" href="./CSS/bandFilter.css">
+  </head>
+  <body>
+    <!-- Main container for simple user form -->
+    <div class="container">
+        <h1>Bands</h1>
+        <!-- Display all bands in a list -->
+        <!-- List element has: Band Name, Music Genre, Band Desc -->
+        <!-- When clicked, displays reviews of the band, and public events! -->
+            <!-- Review info: User, Rating -->
+            <!-- Public Event info: City, Address, Time, Event Type, Desc, Price -->
+        <div id="band-filters">
+          <label>
+            <input type="radio" name="filterBy" value="name" checked>
+            Band Name
+          </label>
+        
+          <label>
+            <input type="radio" name="filterBy" value="genre">
+            Music Genre
+          </label>
+        
+          <label>
+            <input type="radio" name="filterBy" value="city">
+            City
+          </label>
+        
+          <label>
+            <input type="radio" name="filterBy" value="date">
+            Date
+          </label>
+        </div>
+
+        <div id = "band_list"></div>
+
+        <script src="./JS/guest.js"></script>
+    </div>
+  </body>
+</html>

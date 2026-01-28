@@ -1,0 +1,115 @@
+.availTitle {
+  text-align: center;                                           /* Center the text */
+  margin: 5px 0;                                                /* Space above and below */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+  font-style: bold;                                             /* skata */
+  color: #222222FF;                                           /* Dark gray text */
+  font-size: 25px;
+}
+
+.availability-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 5px;
+}
+
+.available-card {
+  background: #b9b9b9;
+  border-radius: 35px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px;
+
+  cursor: pointer;
+}
+
+.accepted-card {
+  background: #25e81e;
+  border-radius: 35px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px;
+
+  cursor: pointer;
+}
+
+.rejected-card {
+  background: #ff2e2e;
+  border-radius: 35px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px;
+
+  cursor: pointer;
+}
+
+.requested-card {
+  background: #ffa82e;
+  border-radius: 35px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px;
+
+  cursor: pointer;
+}
+
+.done-card {
+  background: #7b2eff;
+  border-radius: 35px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px;
+
+  cursor: pointer;
+}
+
+.available-card:hover,
+.accepted-card:hover,
+.requested-card:hover,
+.completed-card:hover,
+.rejected-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+}
+
+.NotAvailable {
+    background: none;
+    color: rgb(255, 56, 56);
+    text-align: center;
+}
+
+.butt {
+    padding: 8px 16px;               /* Comfortable size */
+    background-color: #f0f0f0;       /* Nice green */
+    color: rgb(62, 62, 62);                    /* Text color */
+    border: none;                    /* Remove default border */
+    border-radius: 16px;              /* Rounded corners */
+    font-size: 14px;                 /* Slightly larger text */
+    font-weight: 500;                /* Medium weight */
+    cursor: pointer;                 /* Pointer on hover */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.butt:hover {
+    background-color: #bfcbcf;       /* Slightly darker green */
+    transform: translateY(-1px);     /* Tiny lift effect */
+}
+
+.butt:active {
+    background-color: #79d4d1;       /* Even darker on click */
+    transform: translateY(0);        /* Press effect */
+}
+
+.butt:focus {
+    outline: none;                   /* Remove default outline */
+    box-shadow: 0 0 0 3px rgba(76, 142, 175, 0.632); /* Soft focus ring */
+}

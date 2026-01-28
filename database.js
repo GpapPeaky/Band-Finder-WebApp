@@ -110,7 +110,7 @@ CREATE TABLE private_events (
   price DECIMAL(10,2) NOT NULL,
   status VARCHAR(50) NOT NULL,
   band_decision VARCHAR(50) NOT NULL,
-  user_id INT NOT NULL,
+  user_id INT,
   event_type VARCHAR(100) NOT NULL,
   event_datetime DATETIME NOT NULL,
   event_description VARCHAR(800) NOT NULL,
@@ -126,6 +126,12 @@ CREATE TABLE private_events (
     ON UPDATE CASCADE
 )
 `;
+    const createAdminsTableQuery = `
+    CREATE TABLE admins (
+      admin_username VARCHAR(30) PRIMARY KEY,
+      admin_password VARCHAR(32) NOT NULL
+    )
+    `;
 
     await conn.query(createUsersTableQuery);
     await conn.query(createBandsTableQuery);
@@ -133,6 +139,7 @@ CREATE TABLE private_events (
     await conn.query(createPublicEventsTableQuery);
     await conn.query(createReviewsTableQuery);
     await conn.query(createMessagesTableQuery);
+    await conn.query(createAdminsTableQuery);
 
     return `Database HY359_2025 initialized successfully (if it does not exist).`;
   } catch (err) {

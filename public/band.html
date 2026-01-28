@@ -1,0 +1,289 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Band Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Band user dashboard - manage your profile and events"
+    />
+    <meta name="keywords" content="csd, personal, website, hy359, band" />
+    <meta name="author" content="Apostolakis Giorgos" />
+    <link rel="stylesheet" href="./CSS/style.css" />
+    <link rel="stylesheet" href="./CSS/navigation.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="modeselector">
+        <ul>
+          <li><a href="./band.html">Update Band</a></li>
+          <li><a href="./bandCommunity.html">Community</a></li>
+        </ul>
+      </div>
+      <h1>Update Band Profile</h1>
+
+      <form id="profileForm">
+        <label for="username">Username:</label>
+        <input type="text" name="username" id="username" disabled />
+
+        <label for="email">Email:</label>
+        <input type="email" name="email" id="email" disabled />
+
+        <label class="required" for="password">Password:</label>
+        <input
+          type="text"
+          name="password"
+          id="password"
+          minlength="8"
+          maxlength="14"
+          placeholder="Enter your password"
+          required
+        />
+
+        <label class="required" for="bandname">Band Name:</label>
+        <input
+          type="text"
+          name="band_name"
+          id="bandname"
+          minlength="3"
+          maxlength="30"
+          placeholder="Enter band name"
+          required
+        />
+
+        <label class="required" for="musicgenres">Music Genre:</label>
+        <input
+          type="text"
+          name="music_genres"
+          id="musicgenres"
+          minlength="3"
+          maxlength="200"
+          placeholder="Enter music genres"
+          required
+        />
+
+        <label class="required" for="banddescription">Band Description:</label>
+        <textarea
+          name="band_description"
+          id="banddescription"
+          minlength="3"
+          maxlength="1000"
+          placeholder="Describe your band"
+          required
+        ></textarea>
+        <label class="required" for="bandmembers">Number of members:</label>
+        <input
+          type="number"
+          name="members_number"
+          id="bandmembers"
+          min="1"
+          max="10"
+          placeholder="Number of members"
+          required
+        />
+
+        <label class="required" for="bandyear">Year of foundation:</label>
+        <input
+          type="number"
+          name="foundedYear"
+          id="bandyear"
+          min="1960"
+          max="2025"
+          placeholder="Year founded"
+          required
+        />
+
+        <label class="required" for="bandcity">City of Band:</label>
+        <input
+          type="text"
+          name="band_city"
+          id="bandcity"
+          minlength="3"
+          maxlength="30"
+          placeholder="Enter band city"
+          required
+        />
+
+        <label class="required" for="bandphone">Phone Number:</label>
+        <input
+          type="tel"
+          name="telephone"
+          id="bandphone"
+          placeholder="Enter band phone"
+          required
+        />
+
+        <label for="webpage">Webpage Link:</label>
+        <input
+          type="url"
+          name="webpage"
+          id="webpage"
+          placeholder="http://yourwebsite.com"
+        />
+
+        <label for="photo">Photo Link:</label>
+        <input
+          type="url"
+          name="photo"
+          id="photo"
+          placeholder="http://yourphoto.com"
+        />
+
+        <a
+          class="logout"
+          onclick="logout()"
+          style="
+            cursor: pointer;
+            display: block;
+            width: fit-content;
+            margin: 20px auto 0 auto;
+            color: rgb(85, 85, 255);
+            text-decoration: underline;
+          "
+        >
+          logout
+        </a>
+        <div id="message"></div>
+        <button class="submitbtton" type="submit">Update Profile</button>
+      </form>
+    </div>
+  </body>
+  <script src="./JS/validation.js"></script>
+  <script>
+    function checkSession() {
+      const user = localStorage.getItem("currentUser");
+      const userType = localStorage.getItem("userType");
+      const loginTime = localStorage.getItem("loginTime");
+
+      if (!user || !userType || !loginTime) {
+        return null;
+      }
+
+      const sessionDuration = 24 * 60 * 60 * 1000;
+      const currentTime = Date.now();
+
+      if (currentTime - loginTime > sessionDuration) {
+        logout();
+        return null;
+      }
+
+      return {
+        user: JSON.parse(user),
+        userType: userType,
+      };
+    }
+
+    function logout() {
+      localStorage.removeItem("currentUser");
+      localStorage.removeItem("userType");
+      localStorage.removeItem("loginTime");
+      window.location.href = "index.html";
+    }
+
+    // Check if user is logged in
+    const session = checkSession();
+    if (!session || session.userType !== "band") {
+      alert("Please login first!");
+      window.location.href = "index.html";
+    }
+    // Load user data
+    document.addEventListener("DOMContentLoaded", function () {
+      const user = JSON.parse(localStorage.getItem("currentUser"));
+
+      if (user) {
+        // Populate form fields
+        document.getElementById("username").value = user.username || "";
+        document.getElementById("email").value = user.email || "";
+        document.getElementById("password").value = user.password || "";
+        document.getElementById("bandname").value = user.band_name || "";
+        document.getElementById("musicgenres").value = user.music_genres || "";
+        document.getElementById("banddescription").value =
+          user.band_description || "";
+        document.getElementById("bandmembers").value =
+          user.members_number || "";
+        document.getElementById("bandyear").value = user.foundedYear || "";
+        document.getElementById("bandcity").value = user.band_city || "";
+        document.getElementById("bandphone").value = user.telephone || "";
+        document.getElementById("webpage").value = user.webpage || "";
+        document.getElementById("photo").value = user.photo || "";
+      }
+    });
+
+    document
+      .getElementById("profileForm")
+      .addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        const messageBox = document.getElementById("message");
+        const password = document.getElementById("password").value;
+
+        // Check password length
+        if (password.length < 8) {
+          messageBox.textContent =
+            "Password must be at least 8 characters long!";
+          messageBox.style.color = "red";
+          messageBox.style.padding = "0.5rem";
+          return;
+        }
+
+        // Run all validation checks
+        if (!numberPercentageCheck(password, messageBox)) return;
+        if (hasMajorityCharacter(password, messageBox)) return;
+
+        if (validateStrength(password) === -1) {
+          messageBox.textContent = "Password is too weak!";
+          messageBox.style.color = "red";
+          messageBox.style.padding = "0.5rem";
+          return;
+        }
+
+        // All checks passed - get form data
+        clearMessage(messageBox);
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        const formData = new FormData(this);
+        const jsonData = Object.fromEntries(formData.entries());
+
+        // Add username and email (from localStorage, not from form)
+        jsonData.username = user.username;
+        jsonData.email = user.email;
+
+        console.log("=== FORM DATA BEING SENT ===");
+        console.log("Field names:", Object.keys(jsonData));
+        console.log("Full data:", JSON.stringify(jsonData, null, 2));
+
+        try {
+            const response = await fetch("/band/updateBand", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(jsonData),
+            });
+
+            const result = await response.json();
+            console.log("Response data:", JSON.stringify(result, null, 2));
+
+            if (result.success) {
+              localStorage.setItem("currentUser", JSON.stringify(jsonData));
+
+              // success message
+              messageBox.textContent = "Profile updated successfully!";
+              messageBox.style.color = "green";
+              messageBox.style.padding = "0.5rem";
+            } else {
+              // failure message
+              messageBox.textContent =
+                result.error || "Failed to update profile";
+              messageBox.style.color = "red";
+              messageBox.style.padding = "0.5rem";
+            }
+          } catch (error) {
+            // failure message on catching exception
+            messageBox.textContent = "Error updating profile: " + error.message;
+            messageBox.style.color = "red";
+            messageBox.style.padding = "0.5rem";
+          }
+      });
+  </script>
+</html>

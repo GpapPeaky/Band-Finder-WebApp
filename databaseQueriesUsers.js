@@ -39,6 +39,32 @@ async function getUserByCredentials(username, password) {
     }
   }
 }
+
+async function getUserIdByName(username) {
+  let conn;
+  try {
+    conn = await getConnection();
+
+    const [rows] = await conn.query(
+      "SELECT user_id FROM users WHERE username = ?",
+      [username]
+    ,);
+
+    if (rows.length === 0) {
+      console.log("sapio error");
+      throw new Error("User not found");
+    }
+
+    return rows[0].user_id;
+  } catch(err) {
+    throw new Error("DB error: " + err.message);
+  } finally {
+    if(conn) {
+      await conn.end();
+    }
+  }
+}
+
 async function updateUser(
   username,
   password,
@@ -105,28 +131,6 @@ async function updateUser(
     }
   }
 }
-/*
-async function updateUser(username, newFirstname) {
-  try {
-    const conn = await getConnection();
-
-    const updateQuery = `
-      UPDATE users
-      SET firstname = ?
-      WHERE username = ?
-    `;
-
-    const [result] = await conn.execute(updateQuery, [newFirstname, username]);
-
-    if (result.affectedRows === 0) {
-      return 'No user found with that username.';
-    }
-
-    return 'Firstname updated successfully.';
-  } catch (err) {
-    throw new Error('DB error: ' + err.message);
-  }
-}*/
 
 async function deleteUser(username) {
   let conn;
@@ -137,11 +141,16 @@ async function deleteUser(username) {
       DELETE FROM users
       WHERE username = ?
     `;
-
+    const deleteSecondaryQuery = `
+      DELETE FROM bands
+      WHERE username = ?
+    `;
     const [result] = await conn.execute(deleteQuery, [username]);
 
     if (result.affectedRows === 0) {
-      return "No user found with that username.";
+      const [secondaryResult] = await conn.execute(deleteSecondaryQuery, [username]);
+      if (secondaryResult.affectedRows === 0)
+        return "No user found with that username.";
     }
 
     return "User deleted successfully.";
@@ -154,4 +163,4 @@ async function deleteUser(username) {
   }
 }
 
-module.exports = { getAllUsers, getUserByCredentials, updateUser, deleteUser };
+module.exports = { getAllUsers, getUserByCredentials, updateUser, deleteUser, getUserIdByName };

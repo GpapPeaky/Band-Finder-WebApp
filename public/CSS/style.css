@@ -31,6 +31,27 @@ body {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* reviews Containter */
+.reviewsContainer {
+  max-width: 800px;
+  padding: 30px;
+  width: 100%;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.reviewBody {
+  font-family: Arial, sans-serif;
+  background-color: #faff93;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+  padding: 20px 0;
+  transition: background-color 0.9s ease;
+}
+
 /* Hide band form initially */
 #bandUserFormContainer {
   display: none;
@@ -107,6 +128,7 @@ textarea {
   border-radius: 4px;
   font-size: 16px;
   transition: all 0.3s ease;
+  resize: none;
 }
 
 /* Input hover effect */
@@ -212,4 +234,30 @@ textarea:focus {
 
 .linkLogin:hover {
   text-decoration: underline;
+}
+
+.hyper {
+  color: #4c51bf;
+}
+
+.piechart {
+  width: 100%;
+  max-width: 1000px;   /* prevents overextending on big screens */
+  height: 400px;       /* chart needs explicit height */
+  margin: 0 auto;      /* center it */
+}
+
+.Revenue { 
+  padding: 20px;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+  text-align: center;
+}
+
+.Revenue p {
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0;
 }

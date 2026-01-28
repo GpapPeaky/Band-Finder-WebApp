@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Band Reviews</title>
+  <link rel="stylesheet" href="./CSS/style.css" />
+  <link rel="stylesheet" href="./CSS/navigation.css">
+  <link rel="stylesheet" href="./CSS/reviewCards.css">
+  <link rel="stylesheet" href="./CSS/publicEventCards.css">
+  <link rel="stylesheet" href="./CSS/osm.css">
+  <link rel="stylesheet" href="./CSS/availability.css">
+
+  <!-- OSM -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+  <style>
+    textarea {
+        resize: none;
+    }
+  </style>
+</head>
+
+<body class = "reviewBody">
+  <div class="reviewsContainer">
+    <script src = "./JS/user.js"></script>
+    <h1 id="title1"></h1>
+    <ul id="reviews_list" class="review-list"></ul>
+
+    <!-- Logged IN USER ONLY -->
+    <div id="leave_review_section" style="display: none;">
+    <h1>Leave a Review</h1>
+    
+    <form id="review_form">
+        <label> 
+        Rating:
+        <select id="review_rating" required>
+            <option value="">Select</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        </label>
+    
+        <br><br>
+    
+        <textarea
+        id="review_text"
+        placeholder="Write your review..."
+        rows="5"
+        required
+        ></textarea>
+    
+        <br><br>
+    
+        <button type="submit" onclick="">Submit Review</button>
+    </form>
+    </div>
+    
+    <h1 id="title2"></h1>
+    <div id="public-event-filters">
+        <label>
+            <input type="radio" name="eventFilter" value="type" checked>
+            Event Type
+        </label>
+        
+        <label>
+            <input type="radio" name="eventFilter" value="city">
+            City
+        </label>
+        
+        <label>
+            <input type="radio" name="eventFilter" value="date">
+            Date
+        </label>
+        
+        <label>
+            <input type="radio" name="eventFilter" value="price">
+            Price
+        </label>
+
+        <label id = "please_kill_me">
+            <input type="radio" name="eventFilter" value="distance">
+            Distance
+        </label>
+    </div>
+    <ul id="public_events_list" class="publicEvent-list"></ul>
+
+    <!-- Shiii -->
+    <h1 id = "at" class="availTitle"></h1>
+    <ul id="availabilities" class="availability-list"></ul>
+    <span id = "AvailErr"></span>
+
+    <footer id="mapFooter">
+    <h3>Event Locations</h3>
+    <div id="eventsMap"></div>
+    </footer>
+
+    <script>
+    let allPublicEvents = [];
+
+    document.querySelectorAll('input[name="eventFilter"]').forEach(radio => {
+        radio.addEventListener("change", applyPublicEventFilter);
+    });
+
+    // OSM init
+    let map;
+    let markersLayer;
+    
+    function initMap() {
+        map = L.map("eventsMap").setView([0, 0], 2);
+        
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap contributors",
+        }).addTo(map);
+        
+        markersLayer = L.layerGroup().addTo(map);
+    }
+
+    initMap();
+
+    const params = new URLSearchParams(window.location.search);
+    const bandName = params.get("band");
+    const frag = window.location.hash;
+    const bandID = frag ? frag.substring(1) : "";
+
+    // Current user
+    const user = JSON.parse(localStorage.getItem("currentUser"));
+    let userID;
+     if (user) {
+         userID = user.user_id;
+     } else {
+        // set the distance thing to not show
+        const distanceLabel = document.getElementById("please_kill_me");
+        distanceLabel.style.display = "none"; // browser doesn't support geolocation
+     }
+
+    document.getElementById("title1").textContent =
+        bandName ? `${bandName} Reviews` : "Band Reviews";
+    
+    if (isLoggedIn() && bandName) {
+        document.getElementById("leave_review_section").style.display = "block";
+    }
+
+    async function fetchBandReviews() {
+        const res = await fetch(
+        `/general/reviews/${encodeURIComponent(bandName)}`
+        );
+        const data = await res.json();
+    
+        const list = document.getElementById("reviews_list");
+        list.innerHTML = "";
+    
+        if (!data.reviews || data.reviews.length === 0) {
+            list.innerHTML = "<div class=\"norev\">No reviews yet.</p>";
+            return;
+        }
+    
+        data.reviews.forEach(r => {
+        const li = document.createElement("li");
+
+        // Show ONLY published reviews
+        if (r.status == "published") {
+            li.innerHTML = `
+            <h3>${r.sender}</h3>
+            <p><strong>Rating:</strong> ${r.rating}/5</p>
+            <p>${r.review || ""}</p>
+            `;
+            li.classList.add("review"+ r.rating +"-card");
+        }
+    
+        list.appendChild(li);
+        });
+    }
+    
+    if (bandName) {
+        fetchBandReviews();
+    }
+
+    document.getElementById("title2").textContent =
+        bandName ? `${bandName} Public Events` : "Band Public Events";
+    
+    async function fetchBandPublicEvents() {
+        const res = await fetch(`/general/seePublicEvents`);
+        const data = await res.json();
+        
+        // store ONLY this band's events
+        allPublicEvents = data.events.filter(e => e.band_id == bandID);
+        
+        applyPublicEventFilter(); // initial render
+    }
+
+    let userLocation = new Object();
+
+    function getDistanceKm(lat1, lon1, lat2, lon2) {
+        const R = 6371; // Earth radius in km
+        const toRad = (deg) => deg * Math.PI / 180;
+        
+        const dLat = toRad(lat2 - lat1);
+        const dLon = toRad(lon2 - lon1);
+        
+        const a = 
+            Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+        
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        return R * c; // distance in km
+    }
+
+    // No lat lon??
+    // HARD CODE THAT SHIT
+    userLocation.lat = "35.3406733";
+    userLocation.lon = "25.1016577";
+
+    console.log('%s, %s', userLocation.lat, userLocation.lon);
+
+    function applyPublicEventFilter() {
+        const filterBy = document.querySelector(
+            'input[name="eventFilter"]:checked'
+        ).value;
+        
+        let sorted = [...allPublicEvents];
+        
+        switch (filterBy) {
+            case "type":
+            sorted.sort((a, b) =>
+                a.event_type.localeCompare(b.event_type)
+            );
+            break;
+        
+            case "city":
+            sorted.sort((a, b) =>
+                a.event_city.localeCompare(b.event_city)
+            );
+            break;
+        
+            case "date":
+            sorted.sort((a, b) =>
+                new Date(a.event_datetime) - new Date(b.event_datetime)
+            );
+            break;
+        
+            case "price":
+            sorted.sort((a, b) =>
+                (a.participants_price || 0) - (b.participants_price || 0)
+            );
+            break;
+
+            case "distance":
+            if (userLocation) {
+                sorted.sort((a, b) => {
+                const distA = getDistanceKm(userLocation.lat, userLocation.lon, a.event_lat, a.event_lon);
+                const distB = getDistanceKm(userLocation.lat, userLocation.lon, b.event_lat, b.event_lon);
+                return distA - distB;
+                });
+            } else {
+                alert("Cannot sort by distance: user location not available.");
+            }
+            break;
+        }
+        
+        renderPublicEvents(sorted);
+    }
+
+    function renderPublicEvents(events) {
+        const list = document.getElementById("public_events_list");
+        list.innerHTML = "";
+        
+        const bounds = [];
+        
+        events.forEach(r => {
+            const li = document.createElement("li");
+        
+            const date = new Date(decodeURIComponent(r.event_datetime));
+            const prettyDate = date.toLocaleString(undefined, {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            });
+        
+            li.innerHTML = `
+            <h3><i>${r.event_type}</i></h3>
+            <p><strong>${r.event_city}</strong></p>
+            <p class="desc">${r.event_address}</p>
+            <p class="desc">${prettyDate}</p>
+            <p class="desc">${r.event_description || ""}</p>
+            <p class="desc">Price: ${r.participants_price || "Free"}</p>
+            `;
+        
+            li.classList.add("publicEvent-card");
+            list.appendChild(li);
+        
+            // MAP
+            if (r.event_lat && r.event_lon) {
+            const marker = L.marker([r.event_lat, r.event_lon])
+                .bindPopup(`
+                <strong>${r.event_type}</strong><br>
+                ${r.event_city}<br>
+                ${prettyDate}
+                `);
+        
+            markersLayer.addLayer(marker);
+            bounds.push([r.event_lat, r.event_lon]);
+            }
+        });
+        
+        if (bounds.length) {
+            map.fitBounds(bounds, { padding: [30, 30] });
+        }
+    }
+
+    async function fetchBandAvailability() {
+        const user = JSON.parse(localStorage.getItem("currentUser"));
+        if (!user) return console.error("No currentUser in localStorage!");
+    
+        const { username, password } = user;
+    
+        document.getElementById("at").textContent =
+            bandName ? `${bandName} Private Events` : "Band Private Events";
+    
+        const res = await fetch("/user/seeAvailability", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, password, band_name: bandName }),
+        });
+        
+        const data = await res.json();
+    
+        const list = document.getElementById("availabilities");
+        const listErr = document.getElementById("AvailErr");
+        list.innerHTML = "";
+        listErr.innerHTML = "";
+    
+        const dates = data.dates || [];
+    
+        if (dates.length === 0) {
+            const li = document.createElement("div");
+            li.innerHTML = "Band is unavailable";
+            li.classList.add("NotAvailable");
+            listErr.appendChild(li);
+            return;
+        }
+    
+        // Append all items without checking band_id
+        dates.forEach(r => {
+            const date = new Date(r.event_datetime);
+            const prettyDate = date.toLocaleString(undefined, {
+                year: "numeric", month: "long", day: "numeric",
+                hour: "2-digit", minute: "2-digit"
+            });
+
+            const status = (r.status === "to be done" ? "accepted" : r.status) || "UNKNOWN";
+            const location = (r.event_city || r.event_address)
+                ? `${r.event_city || ""} ${r.event_address || ""}`.trim()
+                : "Location not provided";
+
+
+            const event_status = (r.status || "").trim().toLowerCase();
+            const isAvailability = event_status === "available";
+            const isUserEvent = r.user_id === userID;
+            
+            if (!isAvailability && !isUserEvent) return;
+            
+            const li = document.createElement("li");
+            li.innerHTML = `
+                <p><strong><i>${status.toUpperCase()}</i></strong></p>
+                <p>${prettyDate}</p>
+                <p>${location}</p>
+                ${r.event_description ? `<p>${r.event_description}</p>` : ""}
+                ${r.event_type ? `<p>${r.event_type}</p>` : ""}
+                ${r.band_decision ? `<p>${r.band_decision}</p>` : ""}
+            `;
+            li.classList.add(`${status}-card`);
+            list.appendChild(li);
+
+            if (r.status === "to be done" || r.status === "requested") {
+                const button = document.createElement("button");
+                button.classList.add(`butt`)
+                button.textContent = "Messages";
+
+                button.addEventListener("click", () => {
+                    window.localStorage.setItem("bn", bandName); // Carry over the band name
+                    window.location.href =
+                        `/messageIndexBumAss.html?i=${encodeURIComponent(r.private_event_id)}`;
+                });
+                
+                const br = document.createElement("br");
+                li.appendChild(button);
+            } else if (r.status === "available") {
+                const button = document.createElement("button");
+                button.classList.add(`butt`)
+                button.textContent = "Request Event";
+
+                button.addEventListener("click", () => {
+                    window.localStorage.setItem("bn", bandName); // CarryOver the band name
+                    window.localStorage.setItem("date", r.event_datetime);
+                    window.location.href =
+                        `/eventRequest.html?i=${encodeURIComponent(r.private_event_id)}`;
+                });
+                
+                const br = document.createElement("br");
+                li.appendChild(button);
+            }
+        });
+    }
+    
+    if (bandName) {
+        fetchBandPublicEvents();
+        fetchBandAvailability();
+    }
+
+    const reviewForm = document.getElementById("review_form");
+
+    reviewForm.addEventListener("submit", (e) => {
+        e.preventDefault(); // stop page reload
+        sendReview(bandName);
+    });
+    </script>
+  </div>
+</body>
+</html>

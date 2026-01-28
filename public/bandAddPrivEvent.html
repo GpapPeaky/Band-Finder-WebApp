@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Band Community</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Band user dashboard - manage your profile and events"
+    />
+    <meta name="keywords" content="csd, personal, website, hy359, band" />
+    <meta name="author" content="Apostolakis Giorgos" />
+    <link rel="stylesheet" href="./CSS/navigation.css" />
+    <link rel="stylesheet" href="./CSS/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="modeselector">
+        <ul>
+          <li><a href="./band.html">Update Band</a></li>
+          <li><a href="./bandCommunity.html">Community</a></li>
+        </ul>
+      </div>
+      <form id="profileForm">
+        <label for="event_datetime">Event date & time</label>
+        <input
+          type="datetime-local"
+          id="event_datetime"
+          name="event_datetime"
+          required
+        />
+        <div id="formMessage"></div>
+        <button type="button" class="submitbtton" onclick="submitPrivEvent()">
+          Add event
+        </button>
+      </form>
+    </div>
+    <script src="./JS/loginCheck.js"></script>
+    <script src="./JS/band.js"></script>
+    <script>
+      async function submitPrivEvent() {
+        const msg = document.getElementById("formMessage");
+        let data;
+        try {
+          const session = checkSession();
+
+          let username = session.user.username;
+          let password = session.user.password;
+          const eventDateTime = document.getElementById("event_datetime").value;
+
+          const response = await fetch("/band/setAvailability", {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              username: username,
+              password: password,
+              date: eventDateTime,
+            }),
+          });
+
+          if (!response.ok) {
+            throw new Error(`Server error: ${response.status}`);
+          }
+
+          data = await response.json();
+          console.log(data);
+
+          if (!data.success) {
+            throw new Error(data.message || "Failed to fetch events");
+          }
+
+          msg.innerHTML = `<p style="color: green;"><strong>Event added successfully!</strong></p>`;
+        } catch (error) {
+          if (data) {
+            msg.innerHTML = `<p style="color: red;"><strong>${data.message} </strong></p>`;
+          } else {
+            console.log(error.message);
+            msg.innerHTML = `<p style="color: red;"><strong>Could not add event. Check console for errors.</strong></p>`;
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

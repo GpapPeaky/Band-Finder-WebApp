@@ -1,0 +1,73 @@
+.PublicEventHeader {
+  text-align: center;          /* Center the text */
+  margin: 5px 0;              /* Space above and below */
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Modern font */
+  font-style: bold;
+  color: #222222FF;                 /* Dark gray text */
+  font-size: 25px;
+}
+
+.publicEvent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  gap: 10px;
+}
+
+.publicEvent-card {
+  background: #6bd3ff;
+  border-radius: 35px;
+  padding: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 10px;
+
+  cursor: pointer;
+}
+
+.publicEvent-card:hover {
+  background: #94dfffaa;
+  transform: translateY(-4px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+.publicEvent-card h3 {
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+.publicEvent-card p {
+  margin: 4px 0;
+  font-size: 0.95rem;
+}
+
+.desc {
+    color: gray;
+}
+
+#public-event-filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* flexible columns */
+  gap: 16px;
+  margin: 20px 0;
+
+  justify-content: center; /* centers the whole grid horizontally */
+  justify-items: center;   /* centers each label in its grid cell */
+}
+
+#public-event-filters label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+#public-event-filters label:has(input:checked) {
+  background: #eef3ff;
+  font-weight: bold;
+}

@@ -85,7 +85,25 @@ async function insertBand(band) {
     throw new Error("DB error: " + err.message);
   }
 }
+async function insertAdmin(admin) {
+  try {
+    const conn = await getConnection();
+    const insertQuery = `
+      INSERT INTO admins (
+        admin_username, admin_password
+      ) VALUES (?, ?)
+    `;
+    await conn.execute(insertQuery, [
+      admin.admin_username,
+      admin.admin_password,
+    ]);
 
+    return "Admin inserted successfully.";
+  } catch (err) {
+    console.log(err.message);
+    throw new Error("DB error: " + err.message);
+  }
+}
 async function insertReview(review) {
   try {
     const conn = await getConnection();
@@ -161,7 +179,7 @@ async function deleteReview(review_id) {
     const deleteQuery = `DELETE FROM reviews WHERE review_id = ?`;
 
     console.log(
-      `Executing: DELETE FROM reviews WHERE review_id = ${review_id}`
+      `Executing: DELETE FROM reviews WHERE review_id = ${review_id}`,
     );
 
     const [result] = await conn.execute(deleteQuery, [review_id]);
@@ -205,7 +223,7 @@ async function modifyReview(review_id, status) {
     `;
 
     console.log(
-      `Executing: UPDATE reviews SET status='${status}' WHERE review_id=${review_id} AND status='pending'`
+      `Executing: UPDATE reviews SET status='${status}' WHERE review_id=${review_id} AND status='pending'`,
     );
 
     const [result] = await conn.execute(updateQuery, [status, review_id]);
@@ -216,7 +234,7 @@ async function modifyReview(review_id, status) {
       console.log(`Update failed. Possible reasons:`);
       console.log(`1. Review ${review_id} not found`);
       console.log(
-        `2. Review status is not 'pending' (it's '${currentStatus}')`
+        `2. Review status is not 'pending' (it's '${currentStatus}')`,
       );
     }
 
@@ -269,24 +287,13 @@ async function insertPublicEvent(event) {
 
 async function insertPrivateEvent(event) {
   try {
+    console.log(event);
     const conn = await getConnection();
 
-    const insertQuery = `
-      INSERT INTO private_events (
-        band_id,
-        price,
-        status,
-        band_decision,
-        user_id,
-        event_type,
-        event_datetime,
-        event_description,
-        event_city,
-        event_address,
-        event_lat,
-        event_lon
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `;
+    const insertQuery = `INSERT INTO private_events
+  ( band_id, price, status, band_decision, user_id, event_type,
+    event_datetime, event_description, event_city, event_address, event_lat, event_lon ) 
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
     await conn.execute(insertQuery, [
       event.band_id,
@@ -303,20 +310,70 @@ async function insertPrivateEvent(event) {
       event.event_lon,
     ]);
 
-    return "Private event inserted successfully.";
+    return (
+      "Event request by user " +
+      event.user_id +
+      " for band " +
+      event.band_id +
+      " inserted successfully."
+    );
   } catch (err) {
     console.log(err.message);
     throw new Error("DB error: " + err.message);
   }
 }
 
+async function updatePrivateEvent(event) {
+  try {
+    console.log(event);
+    const conn = await getConnection();
+
+    const insertQuery = `
+      UPDATE private_events
+      SET
+        price = ?,
+        status = ?,
+        band_decision = ?,
+        user_id = ?,
+        event_type = ?,
+        event_description = ?,
+        event_city = ?,
+        event_address = ?,
+        event_lat = ?,
+        event_lon = ?
+      WHERE band_id = ? AND event_datetime = ?
+    `;
+
+    const [result] = await conn.execute(insertQuery, [
+      event.price,
+      event.status,
+      event.band_decision,
+      event.user_id,
+      event.event_type,
+      event.event_description,
+      event.event_city,
+      event.event_address,
+      event.event_lat,
+      event.event_lon,
+      event.band_id,
+      event.event_datetime,
+    ]);
+
+    return result.affectedRows;
+  } catch (err) {
+    console.log(err.message);
+    throw new Error("DB error: " + err.message);
+  }
+}
 module.exports = {
   insertUser,
   insertBand,
+  insertAdmin,
   insertReview,
   insertMessage,
   insertPublicEvent,
   insertPrivateEvent,
+  updatePrivateEvent,
   modifyReview,
   deleteReview,
 };

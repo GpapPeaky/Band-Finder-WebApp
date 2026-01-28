@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Band Reviews</title>
+  <link rel="stylesheet" href="./CSS/style.css" />
+  <link rel="stylesheet" href="./CSS/navigation.css">
+  <link rel="stylesheet" href="./CSS/reviewCards.css">
+  <link rel="stylesheet" href="./CSS/publicEventCards.css">
+  <link rel="stylesheet" href="./CSS/llm.css">
+</head>
+
+<body class = "reviewBody">
+  <div class="reviewsContainer">
+    <script src = "./JS/user.js"></script>
+
+    <h1 id="title1"></h1>
+    <ul id="reviews_list" class="review-list"></ul>
+    
+    <h1 id="title2"></h1>
+    <ul id="public_events_list" class="publicEvent-list"></ul>
+
+    <script>
+
+    const params = new URLSearchParams(window.location.search);
+    window.bandName = params.get("band");
+    const frag = window.location.hash;
+    const bandID = frag ? frag.substring(1) : "";
+
+    document.getElementById("title1").textContent = 
+        bandName ? `${bandName} Reviews` : "Band Reviews";
+
+    if (isLoggedIn() && bandName) {
+        document.getElementById("leave_review_section").style.display = "block";
+    }
+
+    async function fetchBandReviews() {
+        const res = await fetch(
+        `/general/reviews/${encodeURIComponent(bandName)}`
+        );
+        const data = await res.json();
+    
+        const list = document.getElementById("reviews_list");
+        list.innerHTML = "";
+    
+        if (!data.reviews || data.reviews.length === 0) {
+            list.innerHTML = "<p>No reviews yet.</p>";
+            return;
+        }
+    
+        data.reviews.forEach(r => {
+        const li = document.createElement("li");
+
+        // Show ONLY published reviews
+        if (r.status == "published") {
+            li.innerHTML = `
+            <h3>${r.sender}</h3>
+            <p><strong>Rating:</strong> ${r.rating}/5</p>
+            <p>${r.review || ""}</p>
+            `;
+            li.classList.add("review"+ r.rating +"-card");
+        }
+    
+        list.appendChild(li);
+        });
+    }
+    
+    if (bandName) {
+        fetchBandReviews();
+    }
+
+    document.getElementById("title2").textContent =
+        bandName ? `${bandName} Public Events` : "Band Public Events";
+    
+    async function fetchBandPublicEvents() {
+        const res = await fetch(
+            `/general/seePublicEvents`
+        );
+        const data = await res.json();
+    
+        const list = document.getElementById("public_events_list");
+        list.innerHTML = "";
+    
+        if (!data.events || data.events.length === 0) {
+            list.innerHTML = "<p>No public events.</p>";
+            return;
+        }
+
+        const id = bandID;
+    
+        data.events.forEach(r => {
+            const li = document.createElement("li");
+    
+            // Show ONLY published events
+            if (r.band_id == id) {
+                li.innerHTML = `
+                <h3><i>${r.event_type}</i></h3>
+                <p><strong>${r.event_city}</strong></p>
+                <p class="desc"> ${r.event_address}</p>
+                <p class="desc">${r.event_datetime}</p>
+                <p class="desc">${r.event_description || ""}</p>
+                <p class="desc">${r.participants_price || ""}</p>
+                `;
+                li.classList.add("publicEvent-card");
+            }
+        
+            list.appendChild(li);
+        });
+    }
+    
+    if (bandName) {
+        fetchBandPublicEvents();
+    }
+    </script>
+
+    <button class="llm-bubble" onclick="window.location.href='llm.html'">
+    AI
+    </button>
+  </div>
+</body>
+</html>

@@ -102,3 +102,7 @@ p a:hover {
 #BandUserForm{
     display: none;
 }
+
+#AdminUserForm{
+    display: none;
+}

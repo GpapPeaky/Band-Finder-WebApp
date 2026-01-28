@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Create Event</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./CSS/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #9aff9d;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+      font-size: 1rem;
+    }
+
+    button {
+      background: #1a73e8;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #155bb5;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Request Private Event</h1>
+    <form id="createEventForm">
+      <label for="event_type">Event Type</label>
+      <input type="text" id="event_type" name="event_type" placeholder="Enter event type" required>
+
+      <label for="event_description">Event Description</label>
+      <textarea id="event_description" name="event_description" rows="4" placeholder="Enter description"></textarea>
+
+      <label for="event_city">Event City</label>
+      <input type="text" id="event_city" name="event_city" placeholder="Enter city" required>
+
+      <label for="event_address">Event Address</label>
+      <input type="text" id="event_address" name="event_address" placeholder="Enter address" required>
+
+      <button type="submit">Create Event</button>
+    </form>
+  </div>
+
+  <script>
+    let user = JSON.parse(window.localStorage.getItem("currentUser"));
+    let primdate = window.localStorage.getItem("date"); // "2026-05-18T18:00:00.000Z"
+    
+    const dateObj = new Date(primdate);
+    
+    // Extract year, month, day, hours, minutes, seconds
+    const year = dateObj.getFullYear();
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const hours = String(dateObj.getHours()).padStart(2, "0");
+    const minutes = String(dateObj.getMinutes()).padStart(2, "0");
+    const seconds = String(dateObj.getSeconds()).padStart(2, "0");
+    
+    // Format as "YYYY-MM-DD HH:MM:SS"
+    const prettyDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    
+    console.log(prettyDate); // "2026-05-18 18:00:00"
+    
+    const form = document.getElementById('createEventForm');
+    
+    form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const data = {
+        username: user.username,
+        password: user.password,
+        event_type: form.event_type.value,
+        event_description: form.event_description.value,
+        event_city: form.event_city.value,
+        event_address: form.event_address.value,
+        date: prettyDate,
+        band_name: window.localStorage.getItem("bn")
+    };
+    
+    try {
+        const res = await fetch('user/requestBand', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+        });
+    
+        const result = await res.json();
+    
+        if (result.success) {
+        alert('Event created successfully!');
+        form.reset();
+        } else {
+        alert('Error: ' + (result.message || 'Unknown error'));
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Server error, check console.');
+    }
+    });
+</script>
+</body>
+</html>
