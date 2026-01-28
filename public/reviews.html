@@ -362,9 +362,14 @@
             const location = (r.event_city || r.event_address)
                 ? `${r.event_city || ""} ${r.event_address || ""}`.trim()
                 : "Location not provided";
-    
-            if (userID !== r.user_id && r.status !== "available") return; // SHOW ONLY CURRENT USER'S and availabilities
 
+
+            const event_status = (r.status || "").trim().toLowerCase();
+            const isAvailability = event_status === "available";
+            const isUserEvent = r.user_id === userID;
+            
+            if (!isAvailability && !isUserEvent) return;
+            
             const li = document.createElement("li");
             li.innerHTML = `
                 <p><strong><i>${status.toUpperCase()}</i></strong></p>
