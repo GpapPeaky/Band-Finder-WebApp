@@ -4,7 +4,7 @@ const Groq = require("groq-sdk");
 const mysql = require("mysql2/promise");
 
 const groq = new Groq({
-  apiKey: "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",
+  apiKey: "", // Place your key here.
 });
 
 const DB_SCHEMA = `
